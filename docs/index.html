@@ -47,7 +47,7 @@
 </nav>		<div class="jumbotron d-flex align-items-center" style="background-image: url(unknown.png)">
   <div class="container text-center">
     <h1 class="display-2 mb-4 single-blog-title">CS184 Final Project</h1>
-    <h3>IK Rigging</h3>
+    <h3>IK Rigging Non-Bipedal Models</h3>
   </div>
 </div>		<!-- Contact Form Section -->
 <section id="gtco-single-content" class="bg-white">
@@ -57,13 +57,35 @@
                 <!-- Single Content Holder -->
                 <div class="col-md-8 offset-md-2 mt-4">
                     <!-- <img class="float-left" width="320px" src="img/blog-4.jpg" alt=""> -->
-                    <h3 align="left">Title, Summary and Team Members</h3>
+                    <h3 align="left">Introduction and Summary</h3>
                     <p align="left">
-                      Provide us a descriptive title, 2-3 sentences that summarize your project, and list your three team members.
+                      Team Members: Amy Tran, Celeste Wu, Ivy Case, Rupa Duggirala
+                      <br>
+                      Inspired by Alexander Bereznyak's 2016 GDC talk on a type of procedural pose animation (IK rig), we wanted to expand
+                      pre-existing open source code to also handle non-bipedal models. IK rigs boast efficiency and flexibility by employing inverse
+                      kinematics, which uses joints/pin bones to move neighboring structures instead of the classical parent-child hierarchy.
+                      It is further distinguished by isolating model from rig, such that the same rig can be applied to different models
+                      by adding custom rules, as well as add character to the model if needed. A key idea to preserve is the ability to
+                      linearly "add" these rules, such that a model can exhibit multiple traits in different poses.
                     </p>
                     <h3 align="left">Problem Description</h3>
                     <p align="left">
-                      Here you should provide the context for your idea. Describe the problem that you are trying to solve, why it is important, where it is challenging. Give us a general idea on how you are going to solve it.
+                      An early spark of the idea came from seeing Ekan's disappointing follow animation in Pokemon BDSP.
+                      While we are uncertain as to why such a hilarious sliding coil passed quality checks, we started looking into challenges that
+                      game developers often face when it comes to making models and rigs, especially when one is aiming for more variety in models.
+                      Usually, more variety means more work, because now you have to account for how that body type runs / holds a gun / sits etc.
+                      This time / effort barrier results in models in game with limited variety - or a questionable snake movement animation -
+                      when developers cannot afford to manually rig each model. IK rigs hope to alleviate this issue by separating the model from the rig,
+                      primarily by employing inverse kinematics in a manner that only features key joints that are likely applicable to models of a similar build.
+                      By that, we mean bipedal vs. quadrapedal vs. legless etc. models.
+                      <br>
+                      In our search, we found open source code for IK rigs. We are hoping to expand it to non-bipedal creatures, which would entail
+                      learning the source code, identifying key groups of creature body types, analyzing commonalities within each group, and finally
+                      coming up with a synonymous framework as the pre-existing one for bipedal models. We are interested in seeing this implemented
+                      because we would love to see our little snake friend move like a snake, but also because it is a fascinating idea to streamline the animation
+                      pipeline for both animators and riggers alike. Finally, we think this will improve gameplay immersion if developers were to adopt this,
+                      as we will start seeing more variety in game models without too much more cost and effort. Since none of our projects really touched on
+                      animation and rigging, we are a little concerned with the steep learning curve, but we think it will be a rewarding experience.
                     </p>
                     <h3 align="left">Goals and Deliverables</h3>
                     <p align="left">
