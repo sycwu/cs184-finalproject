@@ -1,0 +1,296 @@
+<!DOCTYPE html><script type="module">
+import App, { Draw }		from "./fungi/App.js";
+import XhrQueue 			from "./fungi/lib/XhrQueue.js";
+import GltfUtil,{Gltf}		from "./fungi/lib/GltfUtil.js";
+//
+//#####################################################
+App
+	.init()
+	//.load_shaders( "LowPoly.js" )
+	.set_camera( -60, 20, 3, 0, 0.8, 0 )
+	.task( init )
+	.then();
+
+//#####################################################
+
+async function init(){
+	// console.log( App.gl.ctx.getSupportedExtensions() );
+	let dl	= await XhrQueue.url( "../files/models/pbr/" )
+		.add( "DamagedHelmet.gltf" )
+		.add( "DamagedHelmet.bin" )
+		.add( "DamagedHelmet_albedo.jpg" )
+		.add( "DamagedHelmet_normal.jpg" )
+		.add( "DamagedHelmet_AO.jpg" )
+		.add( "DamagedHelmet_emissive.jpg" )
+		.add( "DamagedHelmet_metalRoughness.jpg" )
+
+		.url( "../files/textures/" )
+		.add( "teufelsberg_inner_1k.jpg" )
+		.then();
+
+	load_shader();
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	let albedo_tex	= App.texture.new( "albedo_tex", dl[2] ); // name, img, doYFlip = false, useMips = false, wrapMode = 0, filterMode = 0
+	let normal_tex	= App.texture.new( "normal_tex", dl[3] );
+	let ao_tex		= App.texture.new( "ao_tex", dl[4] );
+	let emiss_tex	= App.texture.new( "emiss_tex", dl[5] );
+	let mr_tex		= App.texture.new( "mr_tex", dl[6] );
+	let env_tex		= App.texture.new( "env_tex", dl[7], false, true ); // Turn On Mips
+
+	let mat = App.shader.new_material( "PhongTex",{ 
+		base_tex		: albedo_tex, 
+		norm_tex		: normal_tex,
+		ao_tex			: ao_tex,
+		emissive_tex	: emiss_tex,
+		mr_tex			: mr_tex,
+		env_tex			: env_tex,
+	});
+
+	let e = GltfUtil.get_entity( "MeshTest", dl[0], dl[1], mat );
+	e.node.set_pos( 0, 1.0, 0 );
+
+	return true;
+}
+
+
+//##############################################################
+
+function load_shader(){
+	App.shader.new( "PhongTex", vert_src, frag_src, [
+		{ name:"base_tex", type:"sampler2D", value:null },
+		{ name:"norm_tex", type:"sampler2D", value:null },
+		{ name:"ao_tex", type:"sampler2D", value:null },
+		{ name:"emissive_tex", type:"sampler2D", value:null },
+		{ name:"mr_tex", type:"sampler2D", value:null },
+		{ name:"env_tex", type:"sampler2D", value:null },
+	], App.ubo.get_array( "Global", "Model" ) );
+}
+
+const vert_src = `#version 300 es
+	layout(location=0) in vec3 a_pos;
+	layout(location=1) in vec3 a_norm;
+	layout(location=2) in vec2 a_uv;
+
+	uniform Global{ 
+		mediump mat4 proj_view; 
+		mediump mat4 camera_matrix;
+		mediump vec3 camera_pos;
+		mediump float delta_time;
+		mediump vec2 screen_size;
+		mediump float clock;
+	} global;
+
+	uniform Model{ 
+		mat4 view_matrix;
+	} model;
+
+	out vec2 frag_uv;
+	out vec3 frag_norm;
+	out vec3 frag_pos;
+
+	void main(void){
+		vec4 wpos	= model.view_matrix * vec4( a_pos, 1.0 );
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		frag_uv			= a_uv;
+		frag_pos		= wpos.xyz;
+		frag_norm 		= mat3( transpose( inverse( model.view_matrix ) ) ) * a_norm; // Need to Rotate and Scale Normal, do on CPU
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		gl_Position = global.proj_view * wpos;
+	}`;
+
+const frag_src = `#version 300 es
+	precision mediump float;
+	
+	uniform Global{ 
+		mediump mat4 proj_view; 
+		mediump mat4 camera_matrix;
+		mediump vec3 camera_pos;
+		mediump float delta_time;
+		mediump vec2 screen_size;
+		mediump float clock;
+	} global;
+
+	out vec4 out_color;
+
+	//-------------------------
+	
+	uniform sampler2D base_tex;			// Albedo
+	uniform sampler2D norm_tex;			// Normal Map
+	uniform sampler2D ao_tex;			// Ambient Occlusion
+	uniform sampler2D emissive_tex;		// Emission
+	uniform sampler2D mr_tex;			// Metal-Roughness (BG)
+	uniform sampler2D env_tex;			// Enviroment
+
+	in vec2 frag_uv;
+	in vec3 frag_norm;
+	in vec3 frag_pos;
+
+	//-------------------------
+
+	// Without Knowing or precomuting the Vertex Tangent, We can give up a lil
+	// bit of performance by computing a suitable TBN Matrix to use with Normal / Bump Maps.
+	vec3 perturb_normal( vec3 surf_norm, vec3 dir_eye_frag, vec2 uv, sampler2D tex ){
+		vec3 tx_norm = texture( tex, uv ).xyz * 255.0/127.0 - 128.0/127.0;
+
+		// https://www.geeks3d.com/20130122/normal-mapping-without-precomputed-tangent-space-vectors/
+		// http://www.thetenthplanet.de/archives/1180
+		// Get edge vectors of the pixel triangle
+		vec3	dp1		= dFdx( dir_eye_frag ),
+				dp2		= dFdy( dir_eye_frag );
+		vec2	duv1	= dFdx( uv ),
+				duv2	= dFdy( uv );
+
+		// Solve the linear system
+		vec3 	dp2perp	= cross( dp2, surf_norm ),
+				dp1perp	= cross( surf_norm, dp1 ),
+				T		= dp2perp * duv1.x + dp1perp * duv2.x,
+				B		= dp2perp * duv1.y + dp1perp * duv2.y;
+
+		// Construct a scale-invariant frame 
+		float invmax	= inversesqrt( max( dot(T,T), dot(B,B) ) );
+		mat3 tbn		= mat3( T * invmax, B * invmax, surf_norm );
+
+		return normalize( tbn * tx_norm );
+	}
+
+	// Equirectangular, converts Normal Direction to UV Coords
+    vec2 norm_uv( vec3 norm ){
+        float lon   = atan( norm.z, norm.x );
+        float lat   = acos( norm.y );
+        vec2 uv     = vec2( lon, lat ) * ( 1.0 / 3.1415926535897932384626433832795 );
+        uv.x        = 1.0 - ( uv.x * 0.5 + 0.5 ); // Remap and reverse Lon
+        return uv;
+    }
+	
+	//-------------------------
+	
+	const vec3 light_pos 			= vec3( -3.0, 5.0, 1.0 );
+	const vec3 light_color			= vec3( 1.0 );
+	const float ambient_strength	= 0.4;
+
+	//-------------------------
+
+	void main( void ){
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// INIT 
+		vec3 to_cam			= normalize( global.camera_pos - frag_pos );			// Dir to Cam from Frag
+		vec3 to_light		= normalize( light_pos - frag_pos ); 					// Dir To Lite from Frag
+
+		vec4 base_clr		= texture( base_tex, frag_uv );							// Starting Color
+
+		vec3 norm			= normalize( frag_norm );								// Frag Normal from Vertex Attrib
+		norm				= perturb_normal( norm, -to_cam, frag_uv, norm_tex );	// Frag Normal from Texture
+		  
+		float occlusion		= texture( ao_tex, frag_uv ).r;							// Ambient Occlusion
+		vec4 emissive		= texture( emissive_tex, frag_uv );						// Emmissive
+
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// METAL / ROUGHNESS
+		vec4 met_rou 			= texture( mr_tex, frag_uv ); // B=Metal, G=Roughness, GLTF Spec Says so
+
+		// Guess how many mips level the texture might have
+		ivec2 met_rou_size		= textureSize( mr_tex, 0 );
+		float met_rou_mips		= 1.0 + floor( log2( float( max( met_rou_size.x, met_rou_size.y ) ) ) );
+
+		// Setup some properties
+		float rough				= met_rou.g;				// How Rough the Surface
+		float metal				= met_rou.b;				// Is Surface Metal
+		float gloss				= 1.0 - met_rou.g;			// How Glossy, just inverse of roughness
+		float reflec			= (metal + gloss) * 0.5;	// How Reflective is the surface, made this up, works.
+
+		/*
+		Observations with playing with an web based Shader demo
+		gloss == 0, no reflection.
+		gloss == 1 and metal == 1, Full reflection.
+		gloss == 1 and metal == 0, Half Reflection
+		metal == 1 and gloss == 0.5, reflects blurryness
+
+		To get that Total Reflection of Metal=1 / Gloss=1,
+		while also doing half reflection of Metal=0 / Gloss=1
+		
+		( Metal + Gloss ) / 2
+		so if 1,1 i get back 1 which is Full Blending
+		so if 0,1 I get back 0.5 which is half blending.
+		So this simple equation works out to do a decent replication.
+		*/
+
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// ENVIRONMENT MAP
+
+		// Get Reflection Direction between the Frag normal and direction from cam to frag, negate to get reverse direction
+		//vec3 reflect_cam_norm	= reflect( -to_cam, norm ); 					// Can use function OOOOR...
+		vec3 reflect_cam_norm	= -to_cam - 2.0 * dot( norm, -to_cam ) * norm;	// Use the Equation for the same result 4fun
+		
+		// Depending on the roughness of the texture, will tell how much scattering you get
+		// So with more scattering, blurring the enviroment map gives you the basic idea 
+		// and a cheap way to do it is by setting the texture with mips,
+		// then sample the higher levels which are smaller BUT blurry :)
+		// So if smooth get mips of 0, if rough get max lips for big blurryness.
+		vec4 env_clr = textureLod(  
+			env_tex, 
+			norm_uv( reflect_cam_norm ), 	// Convert Direction to UV coords for Equirectangular texture
+			met_rou_mips * rough
+		);
+
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// BASIC LIGHTING
+		vec3 ambient_clr	= light_color * ambient_strength;		// Minimum Light
+
+		float diff			= max( dot( norm, to_light ), 0.0 );	// Light based on angle from light source
+		vec3 diffuse_clr	= diff * light_color;
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// SPECULAR LIGHT
+		float specular_strength	= 3.0;
+		float shininess 		= 32.0; 
+
+		vec3 reflect_lite_n	= reflect( -to_light, norm );	// Light to Frag Dir (negated),
+		float spec 			= pow( max( dot( to_cam, reflect_lite_n ), 0.0 ), shininess );
+		vec3 specular_clr	= specular_strength * spec * light_color;
+		
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// COLOR MIXING
+
+		// Basic Lit Color
+		out_color = vec4( base_clr.rgb * ( ambient_clr + diffuse_clr + specular_clr ), 1.0 );
+
+
+		// Multiply Blend Environment color on surfaces with reflection
+		out_color.rgb = mix(
+			out_color.rgb,
+			out_color.rgb * env_clr.rgb,	// Multiple Blend
+			reflec * reflec					// Curve in gradient value, looks better then linear blending 
+		);
+
+		// After Color and Reflection, Just add Emissive since this texture
+		// is to have no lighting applied to it.
+		out_color.rgb += emissive.rgb;
+
+		// Apply the shadows defined from the texture
+		out_color.rgb *= occlusion * occlusion;			// Squared it to make it a bit darker, personal preference
+
+		// Learned about this Gamma Correction trick from Indigo.
+		// I tweaked the value which gives a better look for me.
+		out_color.rgb = pow( out_color.rgb, vec3( 0.7272 ) ); // org .4545
+
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// TESTING
+
+		//out_color.rgb = vec3( metal );
+		//out_color.rgb = vec3( rough );
+		//out_color.rgb = vec3( ( metal + gloss ) );
+		//out_color.rgb = env_clr.rgb;
+	}
+`;
+
+</script>
+<html><head><style>html,body{ margin:0px; padding:0px; width:100%; height:100%; }</style>
+</head><body><canvas id="pg_canvas"></canvas></body></html>

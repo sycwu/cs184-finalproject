@@ -1,0 +1,601 @@
+<!DOCTYPE html><script type="module">
+import App, { Colour } from "./fungi/App.js";
+//import Capsule		from "./fungi/geo/Capsule.js";
+import Sphere		from "./fungi/geo/UVSphere.js";
+import Points 		from "./fungi/geo/Points.js";
+import Motion 		from "./fungi.test/Motion.js";
+import GltfUtil		from "./fungi/lib/GltfUtil.js";
+import XhrQueue		from "./fungi/lib/XhrQueue.js";
+import PropPanel	from "./sage.ui/PropPanel.js";
+
+//#####################################################
+App
+	.init()
+	.set_camera( 0, 5, 2.0, 0, 0.5, 0 )
+	.task( init )
+	.then();
+
+let gPnt, gMotion, gUbo, $mat, $a, $b;
+
+/*
+https://blenderartists.org/t/experiments-with-npr-toon-shading-in-eevee/1139213
+
+https://developer.blender.org/diffusion/C/browse/master/src/kernel/shaders/node_voronoi_texture.osl
+https://developer.blender.org/diffusion/C/browse/master/src/kernel/shaders/node_noise_texture.osl
+https://developer.blender.org/diffusion/C/browse/master/src/kernel/shaders/node_noise.h
+
+https://github.com/imageworks/OpenShadingLanguage/blob/master/src/include/OSL/oslnoise.h
+
+https://docs.chaosgroup.com/display/OSLShaders/Additional+procedural+noises
+
+https://docs.blender.org/manual/en/latest/render/shader_nodes/textures/noise.html
+
+https://twitter.com/Bookyakuno/status/1258800013804634112
+https://pbs.twimg.com/media/EXgnicGU4AAA2vd?format=jpg&name=large
+*/
+
+//#####################################################
+
+function on_render( dt, ss ){
+	if( dt && App.render_loop.active ) gMotion( dt ); // Move Point
+	App.ubo.update( gUbo.set( "pos", gPnt.node.local.pos ) );
+}
+
+async function init( x ){
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Shader
+	init_shader();
+	$mat = App.shader.new_material( "TESTER" );
+	let e;
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/* Load Mesh */
+	let [ json, bin ] = await XhrQueue.url( "../files/models/" )
+        .add( "suzanne_hpoly.gltf" ).add( "suzanne_hpoly.bin" )
+		.then();
+
+	e 	= GltfUtil.get_entity( "Test", json, bin, $mat );
+	e.node.set_pos( 0, 0.5, 0 );
+	e.active = false;
+	$b = e.id;
+	
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/* Load Capsule 
+	( lathe_cnt=8, arc_div=5, radius=0.5, height=0.25 ) 
+	e = Capsule( "capsule", mat, 10, 8, 0.5, 0.25 ); 
+	e.node.set_pos( 0.5, 0.5, 0 ); 
+	*/
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	/* Load Sphere 
+	y_len=18, x_len=25, radius = 0.5, close_loop=true, pole_fwd=false*/ 
+	e = Sphere( "Sphere", $mat, 18, 25, 0.5, true, false );
+	e.node.set_pos( 0.0, 0.5, 0 );
+	$a = e.id;
+	
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Show Light Location
+	gPnt = Points.new_entity( "Light" );
+	gPnt.points.add( [0,0,0], "#ffffff", 0.3, 1 );
+	gPnt.node.set_pos( 4, 1.8, 5 );
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Motion Closure for Point
+	gMotion = Motion.circle( gPnt, 0.5, 3, 2 );
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\
+	App.ecs.set_entity_active( $a, false );
+
+	init_ui();
+	on_render();
+	//App.render_by( 1, on_render );
+	return true;
+}
+
+//#####################################################
+
+function init_shader(){
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	gUbo = App.ubo.new( "Light", 10, [
+		{ name:"pos",	type:"vec3" },
+		{ name:"color",	type:"vec3" },
+	]);
+
+	gUbo
+		.set( "pos", [2,5,1] )
+		.set( "color", Colour.rgb_array( "#C9ACFF" ) ); //C9ACFF
+	App.ubo.update( gUbo );
+	
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	App.shader.new( "TESTER", VERT_SRC, FRAG_SRC, [
+		//{ name:"coord_scale", type:"float", value:12.0 },
+		//{ name:"randomness", type:"float", value:1 },
+		//{ name:"light_strength", type:"float", value:0.66 },
+	], App.ubo.get_array( "Global", "Model", "Light" ) );
+}
+
+const VERT_SRC = `#version 300 es
+layout(location=0) in vec3 a_pos;
+layout(location=1) in vec3 a_norm;
+
+uniform Global{ 
+	mat4 proj_view; 
+	mat4 camera_matrix;
+	vec3 camera_pos;
+	float delta_time;
+	vec2 screen_size;
+	float clock;
+} global;
+
+uniform Model{ 
+	mat4 view_matrix;
+} model;
+
+out vec3 frag_norm;
+out vec3 frag_cam_pos;
+out vec3 frag_wpos;
+out vec3 frag_lpos;
+
+void main(void){
+	vec4 wpos	= model.view_matrix * vec4( a_pos, 1.0 );
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	frag_lpos 		= a_pos.xyz;
+	frag_wpos		= wpos.xyz;
+	frag_cam_pos	= global.camera_pos;
+	frag_norm 		= mat3( transpose( inverse( model.view_matrix ) ) ) * a_norm; // Need to Rotate and Scale Normal, do on CPU
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	gl_Position = global.proj_view * wpos;
+	gl_PointSize = 8.0;
+}`;
+
+const FRAG_SRC = `#version 300 es
+precision mediump float;
+
+out vec4 out_color;
+
+//-------------------------
+
+uniform Light{ 
+	vec3 pos;
+	vec3 color;
+} light;
+
+in vec3 frag_norm;
+in vec3 frag_cam_pos;
+in vec3 frag_wpos;
+in vec3 frag_lpos;
+
+//-------------------------
+
+vec3 rgb( int c ){
+	return vec3(
+		float( ( c >> 16 ) & 0xff ) * 0.00392156863,
+		float( ( c >> 8 ) & 0xff ) * 0.00392156863,
+		float( c & 0xff ) * 0.00392156863
+	);
+}
+
+
+vec3 color_step_ramp( vec3[3] color, float[3] wgt, float t ){
+	for( int i=2; i > 0; i-- ){
+		if( wgt[ i ] <= t ) return color[ i ];
+	}
+	return color[ 0 ];
+}
+
+//-------------------------
+
+// https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
+// NOTES, Decent Standin for OSL's HashNoise. Doesn't generate the same values, so 
+// voronoi does not render with the same 0,1 range, This one tends to be darker but
+// blenders tends to be brighter.
+uint hash( uint x ) {
+    x += ( x << 10u );
+    x ^= ( x >>  6u );
+    x += ( x <<  3u );
+    x ^= ( x >> 11u );
+    x += ( x << 15u );
+    return x;
+}
+
+uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }
+uint hash( uvec3 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z)             ); }
+uint hash( uvec4 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z) ^ hash(v.w) ); }
+
+// Construct a float with half-open range [0:1] using low 23 bits.
+// All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.
+float floatConstruct( uint m ) {
+    const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
+    const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
+    m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)
+    m |= ieeeOne;                          // Add fractional part to 1.0
+    float  f = uintBitsToFloat( m );       // Range [1:2]
+    return f - 1.0;                        // Range [0:1]
+}
+
+float random( float x ) { return floatConstruct(hash(floatBitsToUint(x))); }
+float random( vec2  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
+float random( vec3  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
+float random( vec4  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
+
+//-------------------------
+// https://developer.blender.org/diffusion/C/browse/master/src/kernel/shaders/node_hash.h
+// https://github.com/imageworks/OpenShadingLanguage/blob/master/src/include/OSL/oslnoise.h
+// Note: Can not port OSL's HashNoise, but managed to find a decent substitute 
+
+//float hash_vector3_to_float(vec3 k){ return hashnoise(k); }
+//float hash_vector4_to_float(vec4 k){ return hashnoise(vec3(k.x, k.y, k.z), k.w); }
+float hash_vector3_to_float(vec3 k){ return random( k ); }
+float hash_vector4_to_float(vec4 k){ return random( k ); }
+
+vec3 hash_vector3_to_vector3( vec3 k ){
+  return vec3( hash_vector3_to_float( k ),
+                 hash_vector4_to_float(vec4(k[0], k[1], k[2], 1.0)),
+				 hash_vector4_to_float(vec4(k[0], k[1], k[2], 2.0)) );
+}
+
+//-------------------------
+// VORONOI NODE
+// https://developer.blender.org/diffusion/C/browse/master/src/kernel/shaders/node_voronoi_texture.osl
+
+/*
+void voronoi_distance_to_edge_3d(vec3 coord, float randomness, out float outDistance){
+	vec3 cellPosition = floor(coord);
+	vec3 localPosition = coord - cellPosition;
+
+  vec3 vectorToClosest;
+  float minDistance = 8.0;
+  for (int k = -1; k <= 1; k++) {
+    for (int j = -1; j <= 1; j++) {
+      for (int i = -1; i <= 1; i++) {
+        vec3 cellOffset = vec3(i, j, k);
+        vec3 vectorToPoint = cellOffset +
+                                hash_vector3_to_vector3(cellPosition + cellOffset) * randomness -
+                                localPosition;
+        float distanceToPoint = dot(vectorToPoint, vectorToPoint);
+        if (distanceToPoint < minDistance) {
+          minDistance = distanceToPoint;
+          vectorToClosest = vectorToPoint;
+        }
+      }
+    }
+  }
+
+  minDistance = 8.0;
+  for (int k = -1; k <= 1; k++) {
+    for (int j = -1; j <= 1; j++) {
+      for (int i = -1; i <= 1; i++) {
+        vec3 cellOffset = vec3(i, j, k);
+        vec3 vectorToPoint = cellOffset +
+                                hash_vector3_to_vector3(cellPosition + cellOffset) * randomness -
+                                localPosition;
+        vec3 perpendicularToEdge = vectorToPoint - vectorToClosest;
+        if (dot(perpendicularToEdge, perpendicularToEdge) > 0.0001) {
+          float distanceToEdge = dot((vectorToClosest + vectorToPoint) / 2.0,
+                                     normalize(perpendicularToEdge));
+          minDistance = min(minDistance, distanceToEdge);
+        }
+      }
+    }
+  }
+  outDistance = minDistance;
+}
+*/
+
+
+void voronoi_f1_3d_euclidean( vec3 coord, float exponent, float randomness, out float outDistance ) //output color outColor, output vec3 outPosition 
+{
+  vec3 cellPosition = floor(coord);
+  vec3 localPosition = coord - cellPosition;
+
+  float minDistance = 8.0;
+  vec3 targetOffset, targetPosition;
+  for (int k = -1; k <= 1; k++) {
+    for (int j = -1; j <= 1; j++) {
+      for (int i = -1; i <= 1; i++) {
+        vec3 cellOffset = vec3(i, j, k);
+        vec3 pointPosition = cellOffset + hash_vector3_to_vector3(cellPosition + cellOffset) * randomness;
+		
+		//float distanceToPoint = voronoi_distance(pointPosition, localPosition, metric, exponent);
+		float distanceToPoint = distance( pointPosition, localPosition );
+		
+        if (distanceToPoint < minDistance) {
+          targetOffset = cellOffset;
+          minDistance = distanceToPoint;
+          targetPosition = pointPosition;
+        }
+      }
+    }
+  }
+  outDistance = minDistance;
+  //outColor = hash_vector3_to_color(cellPosition + targetOffset);
+  //outPosition = targetPosition + cellPosition;
+}
+
+
+/**/
+
+//-------------------------
+
+//1D Perlin noise implementation 
+//https://www.shadertoy.com/view/lt3BWM
+#define HASHSCALE 0.1031
+
+float hash(float p)
+{
+	vec3 p3  = fract(vec3(p) * HASHSCALE);
+    p3 += dot(p3, p3.yzx + 19.19);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+float fade(float t) { return t*t*t*(t*(6.*t-15.)+10.); }
+
+float grad(float hash, float p)
+{
+    int i = int(1e4*hash);
+	return (i & 1) == 0 ? p : -p;
+}
+
+float perlinNoise1D(float p)
+{
+	float pi = floor(p), pf = p - pi, w = fade(pf);
+    return mix(grad(hash(pi), pf), grad(hash(pi + 1.0), pf - 1.0), w) * 2.0;
+}
+
+float fbm(float pos, int octaves, float persistence) 
+{
+    float total = 0., frequency = 1., amplitude = 1., maxValue = 0.;
+    for(int i = 0; i < octaves; ++i) 
+    {
+        total += perlinNoise1D(pos * frequency) * amplitude;
+        maxValue += amplitude;
+        amplitude *= persistence;
+        frequency *= 2.;
+    }
+    return total / maxValue;
+}
+
+
+//	Classic Perlin 3D Noise 
+//	by Stefan Gustavson
+// https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
+vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+vec3 fade(vec3 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
+
+float cnoise(vec3 P){
+  vec3 Pi0 = floor(P); // Integer part for indexing
+  vec3 Pi1 = Pi0 + vec3(1.0); // Integer part + 1
+  Pi0 = mod(Pi0, 289.0);
+  Pi1 = mod(Pi1, 289.0);
+  vec3 Pf0 = fract(P); // Fractional part for interpolation
+  vec3 Pf1 = Pf0 - vec3(1.0); // Fractional part - 1.0
+  vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
+  vec4 iy = vec4(Pi0.yy, Pi1.yy);
+  vec4 iz0 = Pi0.zzzz;
+  vec4 iz1 = Pi1.zzzz;
+
+  vec4 ixy = permute(permute(ix) + iy);
+  vec4 ixy0 = permute(ixy + iz0);
+  vec4 ixy1 = permute(ixy + iz1);
+
+  vec4 gx0 = ixy0 / 7.0;
+  vec4 gy0 = fract(floor(gx0) / 7.0) - 0.5;
+  gx0 = fract(gx0);
+  vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+  vec4 sz0 = step(gz0, vec4(0.0));
+  gx0 -= sz0 * (step(0.0, gx0) - 0.5);
+  gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+
+  vec4 gx1 = ixy1 / 7.0;
+  vec4 gy1 = fract(floor(gx1) / 7.0) - 0.5;
+  gx1 = fract(gx1);
+  vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+  vec4 sz1 = step(gz1, vec4(0.0));
+  gx1 -= sz1 * (step(0.0, gx1) - 0.5);
+  gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+
+  vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
+  vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+  vec3 g010 = vec3(gx0.z,gy0.z,gz0.z);
+  vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+  vec3 g001 = vec3(gx1.x,gy1.x,gz1.x);
+  vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+  vec3 g011 = vec3(gx1.z,gy1.z,gz1.z);
+  vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+
+  vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+  g000 *= norm0.x;
+  g010 *= norm0.y;
+  g100 *= norm0.z;
+  g110 *= norm0.w;
+  vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+  g001 *= norm1.x;
+  g011 *= norm1.y;
+  g101 *= norm1.z;
+  g111 *= norm1.w;
+
+  float n000 = dot(g000, Pf0);
+  float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
+  float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z));
+  float n110 = dot(g110, vec3(Pf1.xy, Pf0.z));
+  float n001 = dot(g001, vec3(Pf0.xy, Pf1.z));
+  float n101 = dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
+  float n011 = dot(g011, vec3(Pf0.x, Pf1.yz));
+  float n111 = dot(g111, Pf1);
+
+  vec3 fade_xyz = fade(Pf0);
+  vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+  vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+  return 2.2 * n_xyz;
+}
+
+//-------------------------
+// NOISE NODE
+//https://developer.blender.org/diffusion/C/browse/master/src/kernel/shaders/node_noise.h
+vec3 random_vector3_offset( float seed ){
+  //return vec3(100.0 + noise(hash, seed, 0.0) * 100.0,
+  //               100.0 + noise(hash, seed, 1.0) * 100.0,
+  //			 100.0 + noise(hash, seed, 2.0) * 100.0);
+	return vec3(
+		100.0 + random( seed + 0.0 ) * 100.0,
+		100.0 + random( seed + 1.0 ) * 100.0,
+		100.0 + random( seed + 2.0 ) * 100.0
+	);
+}
+
+// Signed Perlin-like noise range [-1,1].
+float safe_snoise( vec3 p){
+  //float f = noise( "snoise", p);
+  float f = cnoise( p );
+
+  if (isinf(f)) return 0.0;
+  return f;
+}
+
+// Unsigned Perlin-like noise range [0,1].
+float safe_noise( float p ){
+  //float f = noise("noise", p);
+  float f = perlinNoise1D( p );
+  if (isinf(f)) return 0.5;
+  return f;
+}
+
+float safe_noise( vec3 p){
+  //float f = noise("noise", p);
+  float f = cnoise( p ) * 0.5 + 0.5;
+  if (isinf(f))
+    return 0.5;
+  return f;
+}
+
+/* The fractal_noise functions are all exactly the same except for the input type. */
+float fractal_noise(vec3 p, float details, float roughness)
+{
+  float fscale = 1.0;
+  float amp = 1.0;
+  float maxamp = 0.0;
+  float sum = 0.0;
+  float octaves = clamp(details, 0.0, 16.0);
+  int n = int(octaves);
+  for (int i = 0; i <= n; i++) {
+    float t = safe_noise(fscale * p);
+    sum += t * amp;
+    maxamp += amp;
+    amp *= clamp(roughness, 0.0, 1.0);
+    fscale *= 2.0;
+  }
+  float rmd = octaves - floor(octaves);
+  if (rmd != 0.0) {
+    float t = safe_noise( fscale * p );
+    float sum2 = sum + t * amp;
+    sum /= maxamp;
+    sum2 /= maxamp + amp;
+    return (1.0 - rmd) * sum + rmd * sum2;
+  }
+  else {
+    return sum / maxamp;
+  }
+}
+
+
+//https://developer.blender.org/diffusion/C/browse/master/src/kernel/shaders/node_noise_texture.osl
+float noise_texture( vec3 co, float detail, float roughness, float distortion ){ //output color Color
+  vec3 p = co;
+  if (distortion != 0.0) {
+    p += vec3( safe_snoise(p + random_vector3_offset(0.0)) * distortion,
+               safe_snoise(p + random_vector3_offset(1.0)) * distortion,
+               safe_snoise(p + random_vector3_offset(2.0)) * distortion);
+  }
+
+  float value = fractal_noise( p, detail, roughness );
+  //Color = color(value,
+  //           fractal_noise(p + random_vector3_offset(3.0), detail, roughness),
+  //           fractal_noise(p + random_vector3_offset(4.0), detail, roughness));
+  return value;
+}
+
+//-------------------------
+
+void main( void ){
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	vec3 norm 			= normalize( frag_norm );					// Must normalized, Since it has been interpolated
+	vec3 dir_light		= normalize( light.pos - frag_wpos );		// Frag to Light Directiom
+	vec3 dir_cam		= normalize( frag_cam_pos - frag_wpos );	// Frag tp Camera Direction
+	//float diffuse_lite	= clamp( dot( dir_light, norm ), 0.0, 1.0 );
+	float diffuse_lite	= dot( dir_light, norm ) * 0.5 + 0.5;
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	// COLOR RAMP
+	vec3 ramp_col[3]	= vec3[]( rgb(0xB85408), rgb(0xD1891D), rgb(0xF6FE57) );
+	float ramp_wgt[3]	= float[]( 0.0, 0.40, 0.60 );
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+	// Mixing Noise
+	float vor = 0.0;
+	voronoi_f1_3d_euclidean( frag_lpos * 9.0, 1.0, 1.0, vor ); 
+
+	float n = noise_texture( vec3( vor ) * 8.0,  2.0, 0.0, 1.6 ) * 0.5 + 0.5 ;
+
+	//n = n * 0.3 - 0.1 + diffuse_lite;
+	//n = n * 0.9 + diffuse_lite * 0.1;
+	n = n * diffuse_lite;
+
+	out_color.rgb = color_step_ramp( ramp_col, ramp_wgt, n );	
+}`;
+
+//#####################################################
+
+function init_ui(){
+	//elm_on_input( "coord_scale" );
+	//elm_on_input( "randomness" );
+	//elm_on_input( "light_strength" );
+	
+	document.getElementById("btn_tog_motion").addEventListener("click", ()=>{
+		if( !App.render_loop.active )	App.render_by( 1, on_render );
+		else 							App.render_by( 0 );
+	});
+
+	document.getElementById("btn_tog_mesh").addEventListener("click", ()=>{
+		if( App.ecs.is_entity_active( $a ) ){
+			App.ecs.set_entity_active( $a, false );
+			App.ecs.set_entity_active( $b, true );
+		}else{
+			App.ecs.set_entity_active( $a, true );
+			App.ecs.set_entity_active( $b, false );
+		}
+		App.render();
+	});
+}
+
+function update_mat( n, v ){ $mat.set( n, v ); App.render(); }
+function elm_on_input( name ){
+	document.getElementById( name ).addEventListener( "input", (e)=>{
+		update_mat( e.srcElement.id, parseFloat( e.srcElement.value ) );
+	});
+}
+
+</script>
+<html><head><style>html,body{ margin:0px; padding:0px; width:100%; height:100%; }
+.lnk{ position:absolute; bottom:5px; left:5px; color:yellow; text-decoration:none; font-family:monospace; }
+</style>
+</head><body><canvas id="pg_canvas"></canvas>
+	<a href="https://twitter.com/Bookyakuno/status/1258800013804634112" class="lnk">Blender Nodes From : https://twitter.com/Bookyakuno/status/1258800013804634112</a>
+
+	<prop-panel id="PntProp" side="right" width="300px" class="Theme" open="true" top="10px">
+		<!--
+		<prop-range label="Coord Scale" id="coord_scale" value="12" min=".01" max="50" step="0.01"></prop-range>
+		<prop-range label="Randomness" id="randomness" value="1.0" min="0.0" max="1.0" step="0.01"></prop-range>
+		<prop-range label="Light Strength" id="light_strength" value="0.66" min="0.0" max="1.0" step="0.01"></prop-range>
+		-->
+		<button id="btn_tog_motion">Animate Light Motion</button>
+		<button id="btn_tog_mesh">Sphere / Suzanne</button>
+	</prop-panel>
+</body></html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>SketchpunkLabs - Prototypes</title>
+	<link href="./js/PageLayout.css" type="text/css" rel="stylesheet">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta http-equiv="Access-Control-Allow-Origin" content="*">
+	<style></style>
+</head><body>
+<!--###############################################################-->
+
+<page-layout>
+	<header>
+		<h2>Welcome</h2>
+		
+		<nav>
+			<!--<a href="javascript:void(0)" class="sel">Lorem</a>
+			<a href="javascript:void(0)">Ipsum</a>-->
+			<a href="https://bitbucket.org/sketchpunk/sketchpunk.bitbucket.io/src/master/">[ GOTO SOURCE ]</a>
+		</nav>
+		
+	</header>
+	<p>This site contains many samples and prototypes that I have developed. All the code for the samples are available on bitbucket
+		and people are free to do with it what they will. Ideally its best if you use the latest version of the Chrome browser, I tend to use
+		the latest available APIs and features as I prototype and learn new subjects.</p>
+
+	<p>If you like what you see, why not chip in $1 to my <a href="https://www.patreon.com/sketchpunk">patreon</a> if you feel inclinded.</p>
+	<hr/>
+
+	<section>
+		<h1>Collections</h1>
+		<p>Some demo's packed together as a collection.</p>
+		<ol>
+			<li><a href="src/fungi_v5/ray_intersect/index.html">Ray Intersection</a> How to handle Ray intersections on various 2d/3d shapes.</li>
+			<li><a href="src/fungi_v5_5/_ik/index.html">Inverse Kinematric Solvers</a> Various 3D IK solvers that I put together.</li>
+			<li><a href="src/fungi_v5_5/_noise/index.html">Texture Noise</a> Use UI to play with various noise functions.</li>
+		</ol>
+		<hr/>
+	</section>
+
+	<section>
+		<h1>Drawing App Prototypes</h1>
+		<p>One of my life goals is to create a really fun sketching app. These are just me dipping my toes into that sort of development.</p>
+		<ol>
+			<li><a href="src/misc/tex_3dpainter/">3D Model Painter</a> This is a bare bones prototype of how to paint on a 3D model while also being able to draw on a 2D Texture. Probably a starting point for someone to make a web based substance painter app.</li>
+			<li><a href="src/fungi_v5_5/_paint/index.html">WebGL Painter</a> An example of how to use WebGL to create a drawing canvas from scratch.</li>
+			<li><a href="src/misc/svg_paper/index.html">Svg Paper</a> Prototyping a white board app using svg as the renderer while using curve fitting to smooth out the lines drawn.</li>
+		</ol>
+		<hr/>
+	</section>
+
+	<section>
+		<h1>3D Fungi Prototypes</h1>
+		<p>Fungi is a 3D / Game engine built from sratch using Javascript(ES6) and WebGL 2. I tend to do most of my
+			3D prototypes using fungi since its built around the purpose of rapid prototyping.</p>
+		<ol>
+			<li><a href="src/fungi_v5/001_trilinear_interpolation.html">Trilinear Interpolation</a> 8 Point transformation lattice for manipulating meshes.</li>
+			<li><a href="src/fungi_v5/002_marching_cube_anim.html">Marching Cubes : Animated Process</a> Demonstrating the algorithm scanning grid and generating a mesh based on perlin 3d.</li>
+			<li><a href="src/fungi_v5/003_spring_rig.html">Spring Physics</a> Applying springs to specific bones to procedurally animation parts of a character.</li>
+			<li><a href="src/fungi_v5/004_ik_rigs.html">IK Rigs</a> Recompute animation data to work with various models using inverse kinematics.</li>
+			<li><a href="src/fungi_v5/005_proto_rig.html">ProtoForms v1.0</a> Procedurally generate 3D Characters that can be animated and used for prototyping.</li>
+			<li><a href="src/fungi_v5_5/010_protoforms_ikrig.html">ProtoForms v2.0</a> Procedurally generate 3D Characters that can be animated and used for prototyping.</li>
+			<li><a href="src/fungi_v4/001_spring_terrains.html">Spring Terrain</a> Using spring physics to move points to generate textures as you use keyboard to move around perlin noise.</li>
+			<li><a href="src/fungi_v4/002_gerstner_waves.html">Gerstner Waves</a> Algorithm that simulates ocean waves.</li>
+			<li><a href="src/fungi_v3/001_ik_leg_solvers.html">Various IK Solvers</a> Created a few single pass solvers to replicate the IK motion from a ubisoft GDC talk.</li>
+			<li><a href="src/fungi_v5/006_pivot_transform.html">Pivot Transform</a> How to use a pivot point and a quaternion to transform a mesh in a shader.</li>
+			<li><a href="src/fungi_v5/007_globe_points_a.html">Globe Points (A)</a> Spacing points on a sphere and using a Texture map to highlight points.</li>
+			<li><a href="src/fungi_v5/007_globe_points_b.html">Globe Points (B)</a> Another example but using fibonacci to define points on sphere.</li>
+			<li><a href="src/fungi_v5/008_overgrowth_cubic.html">Animation Cubic Interpolation</a> Inspired by Overgrowth's GDC talk on using 2 poses and cubic interpolation to generate animation cycles.</li>
+			<li><a href="src/fungi_v5/009_ship_controller.html">Space Ship Controller</a> Just woke up one day and just wanted to try to make a space ship fly around.</li>
+			<li><a href="src/fungi_v5_5/011_hand_ctrl.html">Hand Controller</a> Quick example of how to control fingers on a rigged hand.</li>
+			<li><a href="src/fungi_v5_5/012_capsule_morph.html">Capsule Morphing</a> Demonstrating how to great vertex groups, then using various ways with positioning, scaling and bezier curves to change the shape of a capsule into something else with the use of a GLSL Shader.</li>
+			<li><a href="src/fungi_v5_5/016_round_cube_edge.html">Cube with Rounded Edges</a> Example of how to make rounded cubes, with the right setting it becomes a sphereified cube.</li>
+			<li><a href="src/fungi_v5_5/017_phong_shader.html">Phong Lighting with Textures</a> Example of how to handle maps for Albedo, Normal, Metal/Roughness, Emission, Ambient Occlusion and Equirectangular Enviroment Reflection</li>
+			<li><a href="src/fungi_v5_5/018_axis_align_lattice_CPU.html">Axis Aligned Lattice Deformer CPU</a> Based on the Lattice created for unity3d by Barnaby Smith. Only difference is the math was redone in world space for my prototype.</li>
+			<li><a href="src/fungi_v5_5/018_axis_align_lattice_GPU.html">Axis Aligned Lattice Deformer GPU</a> This is port of the previous example which ran on the cpu, but this one runs on the gpu through GLSL.</li>
+			<li><a href="src/fungi_v5_5/019_atmospheric_scattering.html">Atmospheric Scattering Skybox</a> Port of Felix Westin (@FewesW)'s Unity Example of Atmospheric Scattering.</li>
+			<li><a href="src/fungi_v5_5/021_octasphere.html">Octasphere</a> A special type of sphere.</li>
+			<li><a href="src/fungi_v5_5/_misc/mc_editor/index.html">Marching Cubes Editor</a> During the progress of a project, I needed to be able to handle users selecting areas of a dual grid then procedurally generate meshes based on what the user selected. This was made as a proof of concept.</li>
+			<li><a href="src/fungi_v5_5/026_sdf_font_atlas.html">SDF Font Atlas</a> Example of how to parse Font data and render text using instancing in World and Screen Space.</li>
+			<li><a href="src/fungi_v5_5/029_quadtree.html">QuadTree</a> example using quadree to render LOD based on Position or Range. Also manages resources in Object Pools.</li>
+			<li><a href="src/fungi_v5_5/030_frustum_quadtree.html">Frustum Culling QuadTree</a> extra example wtih rendering a frustum while culling quadtree tiles that are within view.</li>
+		</ol>
+		<hr/>
+
+
+		<h1>SDF / Ray Marching Prototypes</h1>
+		<p>A collection of SDF related examples using fungi to handle the rendering.</p>
+		<ol>
+			<li><a href="src/fungi_v5_5/010_sdf_gears.html">Animated Gear Sphere</a> Following a tutorial by Inigo Quilez but using a volume for rendering.</li>
+			<li><a href="src/fungi_v5_5/011_sdf_distance.html">SDF Shapes</a> Different SDF Shapes transitions in Quad rendering with custom made SDF Camera.</li>
+			<li><a href="src/fungi_v5_5/013_imposter_sphere.html">Imposter Shphere</a> Uisng a Billboard Quad and Ray-Sphere Intersection, you can fake a lit textured sphere.</li>
+			<li><a href="src/fungi_v5_5/014_sdf_creature.html">Monster Character</a> My take on Inigo Quilez's monster in Happy Jumping Tutorial.</li>
+			<li><a href="src/fungi_v5_5/015_sdf_world.html">Happy Jumping World</a> Using a sdf camera to walk around a world created following Inigo Quilez's tutorial. </li>
+			<li><a href="src/fungi_v5_5/022_sdf_bones.html">Bone Chain</a> created a mini example of how to create bone transforms and used sdf to render the bone's transform </li>
+			<li><a href="src/fungi_v5_5/025_sdf_2d_faces.html">2D SDF Faces</a> using SDF to design multiple eyes or mouths to display on a robot face.</li>
+		</ol>
+		<hr/>
+
+
+		<h1>Three.js Prototypes</h1>
+		<p>When doing professional work, I opt to use three.js instead of fungi.</p>
+		<ol>
+			<li><a href="src/threejs/wave_function_collapse/index.html">Wave Function Collapse</a> Using 3D model tiles, the algorthm will connect them together to procedurally generate a road system.</li>
+			<li><a href="src/threejs/hex_map/map.html">Hexagon Map</a> Procedurally generate a Hexagon Map while using Cubic Noise to compute the height of each column.</li>
+			<li><a href="src/threejs/hex_map/map_cpu.html">Hexagon Map CPU</a> CPU Bound version which also places assets randomly on the hex board.</li>
+			<li><a href="src/threejs/autoskinning/index.html">Voxel Geodesic Autoskinning (CPU)</a> Recreating autoskinning process described from a white paper.</li>
+		</ol>
+		<hr/>
+	
+		<h1>3D Shader Prototypes</h1>
+		<p>Using fungi, i sometimes try to spend some time learning GLSL to create shaders, plus how to render 3D Objects.</p>
+		<ol>
+			<li><a href="src/fungi_v5/shading/001_phong.html">Phong Lighting</a> Basic lighting : Ambient, Diffuse and Specular.</li>
+			<li><a href="src/fungi_v5/shading/002_toon.html">Toon Lighting</a> Render things to be more cartoon like.</li>
+			<li><a href="src/fungi_v5_5/002_toon_metal.html">Toon Metal</a> ported a unity toon shader to that webgl/glsl, originally by minionsart.</li>
+			<li><a href="src/fungi_v5_5/001_parallax_glitter.html">Parallax Glitter</a> porting a unity shader to webgl/glsl rendering textures with parallax.</li>
+			<li><a href="src/fungi_v5_5/003_eyeball.html">EyeBall</a> porting a unity shader to webgl/glsl, originally by minionsart.</li>
+			<li><a href="src/fungi_v5_5/004_halftones.html">Halftones</a> exeriment on learning how to generate halftones on a mesh.</li>
+			<li><a href="src/fungi_v5_5/005_dithering.html">Dithering</a> a different way to do shading with pixel pattern that change by depth.</li>
+			<li><a href="src/fungi_v5_5/006_sdf_halftones.html">SDF Texture Halftones</a> a sample of how to use SDF textures to do halftone shading.</li>
+			<li><a href="src/fungi_v5_5/007_toon_npr_d.html">Voronoi Edge Texture Node</a> ported blender's shader node into something usable in webgl.</li>
+			<li><a href="src/fungi_v5_5/008_toon_npr_e.html">Voronoi F1 &amp; Noise Texture Nodes</a> porting blender's shader nodes into something usable in webgl.</li>
+			<li><a href="src/fungi_v5_5/009_toon_halftones.html">Toon Halftones</a> A custom toon shader that uses a code based color ramp, specular light and direction rim shadows while using halftones has a way to transition between colors.</li>
+			<li><a href="src/fungi_v5_5/020_kenny_dir_tint.html">Kenny Direction Tint</a> Fun shader that applies lighting based on axis direction.</li>
+			<li><a href="src/fungi_v5_5/023_pixel_font_shader.html">Pixel Font</a> Rendering pixel based font in a shader, no textures.</li>
+			<li><a href="src/fungi_v5_5/024_multiple_lights.html">Multiple Lights</a> Example of rendering multiple lights. The main draw is using JS ArrayBuffers to store and send data to UBO.</li>
+			<li><a href="src/fungi_v5_5/027_komikaze_aqua.html">Komikaze Aqua</a> Porting over a blender material into GLSL / WebGL.</li>
+			<li><a href="src/fungi_v5_5/028_skydome.html">Sky Dome</a> fixed up an old example from an article. Lots of customization, easy to make day and night cycles with Sun/Moon.</li>
+		</ol>
+		<hr/>
+
+		<h1>3D Terrains</h1>
+		<p>One of the things I'd like to learn is to procedurally generate terrains, water and planets.</p>
+		<ol>
+			<li><a href="src/fungi_v5_5/_terrain/000_terrain_cube.html">Terrain Cube</a> using fbm noise with user defined settings.</li>
+		</ol>
+		<hr/>
+
+		<h1>2D Prototypes</h1>
+		<p>Various experiments using just Javascript, CSS and HTML Canvas. Some are preludes to making more complicated 3D prototypes.</p>
+		<ol>
+			<li><a href="src/2d/001_chasing_spring.html">Spring Movement</a> Using spring physics as a movement driver.</li>
+			<li><a href="src/2d/002_irregular_grid.html">Irregular Hex Grid</a> Recreation of Oskar's Irregular Grid.</li>
+			<li><a href="src/2d/003_marching_squares.html">Marching Squares : Animated Process</a> An animated sample of how the algorithm works.</li>
+			<li><a href="src/2d/003_marching_squares_noise.html">Marching Squares : Traverse Noise</a> Using the keyboard to move around 2D noise as it gets rendered my MS algorithm.</li>
+			<li><a href="src/2d/004_curve_animation.html">Keyframe Curve Movement</a> Trying to animate movement on a hermite curve with key frames.</li>
+			<li><a href="src/2d/005_moving_timeline.html">Moving Timeline</a> Experimenting with how to draw a numbered grid as it scrolls.</li>
+			<li><a href="src/2d/006_hermite_path_animation.html">Keyframe Events</a> Want to have events trigger during a key frame animation.</li>
+			<li><a href="src/2d/000_alchemy_gen.html">Alchemy Symbol Generator</a> Recreating procedurally generate symbols originally in php.</li>
+			<li><a href="src/2d/009_wfc_text.html">Wave Function Collapse</a> Basic sample of the algorithm using text as tiles. </li>
+			<li><a href="src/2d/010_quadtree.html">Quad Tree</a> Generate random points and place them it in a quad tree, then visualize grid.</li>
+			<li><a href="src/2d/011_bezier_editor.html">Bezier Splines</a> Curve tool with real time animation while editing the spline.</li>
+			<li><a href="src/2d/012_onedollar_recognizer.html">1$ Recognizer</a> Playing with the $1 2D shape / gesture recognizer.</li>
+			<li><a href="src/2d/013_trig_visuals.html">Trig Functions</a> Visualize trig functions like: sin, cos, tan</li>
+			<li><a href="src/fungi_v3/002_lemniscate_bernoulli.html">Lemniscate Bernoulli</a> Animation on this specific curve</li>
+			<li><a href="src/fungi_v3/003_watts_curve.html">Watts Curve</a> Animation on this specific curve</li>
+	
+			<!-- <li><a href="src/2d/"></a> - </li> -->
+		</ol>
+		<hr/>
+
+		<h1>UI Web Components</h1>
+		<p>I enjoy putting together UI components from scratch using Javascript, CSS and HTML. I sometimes need a way to control prototypes.</p>
+		<ol>
+			<li><a href="src/ui/001_prop_panel.html">Property Panel</a> A slide out panel with editable rows of other ui components.</li>
+			<li><a href="src/ui/002_timeline.html">Timeline</a> Animation Timeline rendered with HTML canvas for controlling and viewing animation time.</li>
+			<li><a href="src/ui/003_gchat_modals.html">GChat Modal</a> Many years ago I made a webbased chat tool for work, i recreated gchat web interface for it.</li>
+			<li><a href="src/ui/004_range_input.html">Range Input</a> Created two version of a custom web ui component, one renders with canvas and the other with svg.</li>
+		</ol>
+		<hr/>
+
+		<h1>Misc</h1>
+		<p>Just Random extra stuff.</p>
+		<ol>
+			<li><a href="src/misc/curve_editor/index.html">Animation Curve Editor</a> Tool I thought about making so I can generate animation curves.</li>
+			<li><a href="src/misc/neditor/index.html">Node Editor</a> Web Based example of nodes that can be tied together.</li>
+			<li><a href="src/misc/noise_ui/index.html">Noise Generator</a> Visual tool to see what noise looks like when merged together.</li>
+			<li><a href="src/misc/shader_blocks/index.html">Shader Blocks</a> My attempt at a webbased shader forge like tool.</li>
+			<li><a href="src/misc/puggle/index.html">Puggle</a> A webbased recreation of a mini game called Puggle.</li>
+
+		</ol>
+		<hr/>
+	</section>
+</page-layout>
+
+<!--###############################################################
+LOAD JAVASCRIPT AT THE BOTTOM -->
+<script src="./js/PageLayout.js"></script>
+</body>
+</html>

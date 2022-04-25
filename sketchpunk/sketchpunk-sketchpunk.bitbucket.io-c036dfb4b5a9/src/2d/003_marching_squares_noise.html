@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html><head><title>LayerCanvas</title>
+<style>
+	html, body{ margin:0px; padding:0px; width:100%; height:100%; }
+	body{ background-color:#1E1E1E; }
+	canvas{ border:0px solid red; position:absolute; }
+</style>
+</head><body>
+<canvas id="layer01"></canvas>
+<div style="color:white; position:absolute; top:10px; left:10px; font-family:monospace; font-size:16px;">Use WASD on keyboard to move around.</div>
+
+<script type="module">
+import Canvas			from "./lib/Canvas.js";
+import Vec2 			from "./lib/Vec2.js";
+import Noise            from "./lib/Noise.js";
+
+// https://www.boristhebrave.com/2018/04/15/marching-cubes-tutorial/
+// An alternative to marching squares : https://www.boristhebrave.com/2018/04/15/dual-contouring-tutorial/
+
+//########################################################################################################
+const SQ_SIZE		= 20;
+const WSIZE			= 30;
+const HSIZE			= 20;
+const WIDTH			= WSIZE * SQ_SIZE;
+const HEIGHT		= HSIZE * SQ_SIZE;
+const DOT_RADIUS	= 2;
+
+let $layer1,							// Drawing Layer  
+	$grid,								// Grid Object
+	$running	= false,
+	$origin		= [0, 0];	
+
+//########################################################################################################
+
+window.onload = function(){
+	$layer1	= new Canvas( "layer01" ).center();
+	$grid 	= new Grid2D( WSIZE, HSIZE, WIDTH, HEIGHT, [-WIDTH/2, -HEIGHT/2] );
+	
+	console.log( WIDTH, HEIGHT );
+
+	window.addEventListener( "keydown", (e)=>{
+		if( $running ) return;
+
+		switch( e.keyCode ){
+			case 87: $origin[1]--; break; // w
+			case 65: $origin[0]--; break; // a
+			case 83: $origin[1]++; break; // s
+			case 68: $origin[0]++; break; // d
+		}
+
+		run();
+	});
+
+	run();
+}
+
+function run(){
+	$running = true;
+    compute_noise();
+	draw_grid();
+	draw_march_sqr();
+	$running = false;
+}
+
+function compute_noise(){
+	let c, n;
+	let freq	= 0.3;	// Steps to travel between points in noise
+	let lmt		= 0.5;	// Min value to be considered on.
+
+	for( c of $grid.cells ){
+		n = Noise.perlin2( 
+			( $origin[0] + c.coord[0] ) * freq, 
+			( $origin[1] + c.coord[1] ) * freq
+		) * 0.5 + 0.5;
+
+		c.data = ( n >= lmt )? 1 : 0;
+	}
+}
+
+function draw_grid(){
+	$layer1.clear().fill( "#303030" );
+
+	let c;
+	for( c of $grid.cells ){
+		$layer1.fill( (c.data == 1)? "#707070":"#303030" );
+		$layer1.circle_vec( c.pos, DOT_RADIUS );
+	}
+}
+
+function draw_march_sqr(){
+	$layer1.both( "#00ffff" ).line_width( 1 );
+
+	let ci, i, bits, map,
+		mid_a = new Vec2(),
+		mid_b = new Vec2();
+
+	for( ci of $grid.cell_iter() ){
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Compute the bit value based on which corners is on.
+		bits = 0;
+		for( i in MarchingSquares.Corners ){
+			if( ci[ i ].data == 1 ) bits += MarchingSquares.Corners[ i ];
+		}
+
+		// Find the Drawing Rules for this specific square configuration
+		map = MarchingSquares.map[ bits ];
+		if( !map ) continue;
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		for( i=0; i < map.length; i+=4 ){
+			// Compute the mid point of two edges at a time.
+			mid_a.from_lerp( ci[ map[i]  ].pos,		ci[ map[i+1] ].pos, 0.5 );
+			mid_b.from_lerp( ci[ map[i+2]  ].pos,	ci[ map[i+3] ].pos, 0.5 );
+
+			// Draw a line between the two mid points
+			$layer1
+				.circle_vec( mid_a, 1 )
+				.circle_vec( mid_b, 1 )
+				.line_vec( mid_a, mid_b );
+		}
+	}
+}
+
+class MarchingSquares{
+	static TopL		= 1;
+	static BotL		= 2;
+	static BotR		= 4;
+	static TopR		= 8;
+	static Corners	= [ this.TopL, this.BotL, this.BotR, this.TopR ];
+
+	// https://www.boristhebrave.com/content/2018/04/mc_combinations.svg
+	// Mapping based on this image.
+	// [ EDGE_CORNER_A1, EDGE_CORNER_A2, etc ]
+	static map	= [
+		null,
+		[ 0,1, 0,3 ],
+		[ 0,1, 1,2 ],
+		[ 0,3, 1,2 ],
+		[ 1,2, 2,3 ],
+		[ 0,1, 1,2, 2,3, 3,0 ],
+		[ 0,1, 2,3 ],
+		[ 2,3, 3,0 ],
+		[ 2,3, 3,0 ],
+		[ 0,1, 2,3 ],
+		[ 0,1, 0,3, 1,2, 2,3 ],
+		[ 1,2, 2,3 ],
+		[ 0,3, 1,2 ],
+		[ 0,1, 1,2 ],
+		[ 0,1, 0,3 ],
+		null,
+	];
+}
+
+//########################################################################################################
+
+class Grid2DCell{
+    coord	= [ 0, 0 ];
+	pos		= [ 0, 0 ];
+	data	= null;
+}
+
+class Grid2D{
+	cells = new Array();
+	x_len = 0;
+	y_len = 0;
+	
+	constructor( x_cnt, y_cnt, w, h, offset=null ){
+		this.resize( x_cnt, y_cnt, w, h, offset );
+	}
+	// #region METHODS
+	resize( x_cnt, y_cnt, w, h, offset=null ){
+		let x, y, i, c,
+			len 	= x_cnt * y_cnt,		// How Many Total Points
+			x_inc	= w / ( x_cnt - 1 ),	// 
+			y_inc	= h / ( y_cnt - 1 );
+		
+		this.cells.length	= len;
+		this.x_len			= x_cnt;
+		this.y_len			= y_cnt;
+
+		for( i=0; i < len; i++ ){
+			y = ( i / x_cnt ) | 0;
+			x = i - y * x_cnt;
+
+			if( !this.cells[ i ] ) this.cells[ i ] = new Grid2DCell();
+
+			c				= this.cells[ i ];
+			c.coord[ 0 ]	= x;
+			c.coord[ 1 ]	= y;
+			c.pos[ 0 ]		= x_inc * x;
+			c.pos[ 1 ]		= y_inc * y;
+
+			if( offset ){
+				c.pos[ 0 ] += offset[ 0 ];
+				c.pos[ 1 ] += offset[ 1 ];
+			}
+		}
+
+		return this;
+	}
+	// #endregion /////////////////////////////////////////////////////////////////////
+
+	// #region ITERATORS
+	cell_iter(){
+		let i 		= 0,
+			x_end	= this.x_len-2,						// Skip Last Column
+			i_end	= this.cells.length - this.x_len,	// Skip Final Row
+			pnts	= [ null, null, null, null ];
+
+		return {
+			[Symbol.iterator]	: function(){ return this; },
+			next				: ()=>{
+				if( i >= i_end ) return { done:true };
+
+				//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				pnts[ 0 ] = this.cells[ i ];					// TOP LEFT
+				pnts[ 1 ] = this.cells[ i + this.x_len ];		// BOT LEFT
+				pnts[ 2 ] = this.cells[ i + this.x_len + 1 ];	// BOT RIGHT
+				pnts[ 3 ] = this.cells[ i+1 ];					// TOP RIGHT
+
+				//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				i++; // Next Element
+
+				// Skip Final Column Element, to to next row
+				if( pnts[0].coord[0] == x_end ) i++;
+
+				return { done:false, value:pnts };
+			},
+		};
+	}
+	// #endregion /////////////////////////////////////////////////////////////////////
+}
+
+//########################################################################################################
+
+</script></body></html>

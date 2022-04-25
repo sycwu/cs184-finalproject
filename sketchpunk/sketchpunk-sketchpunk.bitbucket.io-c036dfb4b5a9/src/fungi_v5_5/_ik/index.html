@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Inverse Kinematics</title>
+	<link href="/js/PageLayout.css" type="text/css" rel="stylesheet">
+	<style></style>
+</head><body>
+<!--###############################################################-->
+
+<page-layout>
+	<header>
+		<h2>Inverse Kinematics</h2>
+		<nav>
+			<!--<a href="javascript:void(0)" class="sel">Lorem</a>
+			<a href="javascript:void(0)">Ipsum</a>-->
+			<a href="https://bitbucket.org/sketchpunk/sketchpunk.bitbucket.io/src/master/">[ GOTO SOURCE ]</a>
+		</nav>
+	</header>
+	<p>I got into IK by watching Ubisoft's IK Rigs GDC Talk. Since then I've tried my best to replicate as many
+		of the IK leg movements types I saw in the video. This is a collection of mostly what I call single pass IK Solvers. These
+		are an alternative to things like FABIK and CCD Solvers which require several passes to reach an end effector.
+	</p>
+
+	<section>
+		<ol>
+			<li><a href="000_aim.html">SwingTwist Solver</a> this uses 2 directions to point a bone, similar to lookAt matrix function. Instead it uses what I call Inverted Quaternation Direction along with the concept of breaking rotation down into a swing and twist motion. It works well it keeping bone orientations intact.</li>
+			<li><a href="001_limb.html">Limb Solver</a> two bone solver thats good for human arms and legs.</li>
+			<li><a href="002_zsolver.html">Z Solver</a> three bone solver that shapes the bones in a Z Shape, good for animal or mech legs.</li> 
+			<li><a href="003_piston.html">Piston Solver</a> this one handles position instead of rotation which is uses to create a piston motion. good for mechanical movement.</li> 
+			<li><a href="004_arc.html">Arc Solver</a> with equal lengthed bones, it translate the IK distance to a circle arc toward the end effector.</li> 
+			<li><a href="005_arc_sin.html">ArcSin Solver</a> based on the arc solver but fixed to create a sin wave like shape.</li> 
+			<li><a href="006_trapezoid.html">Trapezoid Solver</a> different three bone solver that uses a trapezoid shape to compute the angles which ends up creating a c like shape. Good for mech legs like the star wars AT-RT.</li>
+			<li><a href="007_spring.html">Spring Solver</a> with even number of bones and equal length, this solver creates a spring-like shape.</li> 
+			<li><a href="008_triangulation.html">Triangulation Solver</a> my implementation of a research paper. Its like a single pass solver alternative to CCD.</li> 
+			<li><a href="009_natural_ccd.html">Natural CCD</a> from a white paper where they take the CCD algorithm and apply a scaling factor that gives the moment of the bones a more natural feel.</li> 
+			<li><a href="400_solvers.html">All Solvers</a> showing off all the solvers using procedural leg movement while rendering all the ik data with SDF Ray Marching, this recreates a part of the Ubisoft Demo.</li>
+			<li><a href="500_rig.html">IK Rig</a> working example of the current version of the IK Rig Animation system. This one takes existing animation, converts all the rotation data into
+			IK information that is then used to drive other characters using IK solvers. This allows sharing animations between characters that dont have the same kind of skeleton. It also has
+		an extra solver used to animate the human spine that I call SwingTwist Chain solver, which uses two sets of directions that interpolates the results onto a chain of bones to recreate how the spine should be rotated.</li> 
+		</ol>
+	</section>
+</page-layout>
+
+<!--###############################################################
+LOAD JAVASCRIPT AT THE BOTTOM -->
+<script src="/js/PageLayout.js"></script>
+</body>
+</html>

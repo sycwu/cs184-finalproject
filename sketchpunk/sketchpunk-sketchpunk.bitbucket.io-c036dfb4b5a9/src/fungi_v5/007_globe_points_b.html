@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<script type="module">
+	import App, { Maths, Vec3 }	from "./lib/fungi/App.js";
+	import XhrQueue 			from "./lib/fungi/lib/XhrQueue.js";
+	import Motion				from "./lib/fungi.test/Motion.js";
+
+	// http://extremelearning.com.au/evenly-distributing-points-on-a-sphere/
+	// https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
+
+	//#####################################################
+	App.builder( true, true )
+		.set_camera(0, 20, 4, 0, 1.0, 0)
+		.add(init)
+		.render_loop( on_render )
+		//.render_on_mouse()
+		.build();
+
+	//#####################################################
+	let gAnim;
+	function on_render( dt, ss ){ gAnim( dt ); }
+
+	async function init(){
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Download Texture Mask of the Globe
+		let img = await XhrQueue.add( "../files/img/map_mask.jpg").then();
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Render Mask onto texture, so we can get pixel information
+		let canvas 			= document.createElement( "canvas" );
+		let ctx				= canvas.getContext( "2d" );
+		canvas.width		= img.width;
+		canvas.height		= img.height;
+		canvas.style.width	= img.width + "px";
+		canvas.style.height	= img.height + "px";
+
+		ctx.drawImage( img, 0, 0 );
+		let px_ary = ctx.getImageData( 0, 0, img.width, img.height );
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Generate Points based on Mask
+		fibonacci_sphere( px_ary, img.width, img.height );
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Add rotation 
+		gAnim = Motion.rot_by( App.Debug.ePnt, -30, "y" );
+		return true;
+	}
+
+	function fibonacci_sphere( rgba_ary, px_w, px_h ){
+		// http://extremelearning.com.au/evenly-distributing-points-on-a-sphere/
+
+		const GOLDEN_RATIO	= ( 1 + 5**0.5 ) / 2;
+		const PI_2 			= Math.PI * 2;
+		const OFFSET_Y		= 1.2;
+		
+		let n 	= 1700;
+		let pos = [0,0,0];
+		let phi, theta,x, y, z;
+
+		// NOTES: if i += 1, get less spiral but looks more like a random pack.
+
+		for( let i=0; i < n; i+=0.5 ){
+			phi		= Math.acos( 1 - 2 * i / n );
+			theta	= PI_2 * i / GOLDEN_RATIO;
+			
+			pos[0]	= Math.cos( theta ) * Math.sin( phi ), 
+			pos[1]	= Math.cos( phi ) + OFFSET_Y;
+			pos[2]	= Math.sin( theta ) * Math.sin( phi );
+
+			// Compute UV for Point
+			let ty = phi / Math.PI;	// Vertical Time
+			let tx = ( theta % PI_2 ) / PI_2;	// Horizontal Time
+			let uy = Math.floor( px_h * ty ) * px_w;	// UV Y
+			let ux = Math.floor( px_w * (1-tx) ) + uy;	// UV X
+			let px = rgba_ary.data[ ux * 4 ];	// Pixel's R value
+
+			if( px < 128 )	App.Debug.pnt( pos, "#00cc00", 0.03 );
+			else 			App.Debug.pnt( pos, "#006666", 0.03 );
+		}
+	}
+</script>
+<page-layout></page-layout>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Ray Intersection</title>
+	<link href="/js/PageLayout.css" type="text/css" rel="stylesheet">
+	<style></style>
+</head><body>
+<!--###############################################################-->
+
+<page-layout>
+	<header>
+		<h2>Ray Intersection</h2>
+		<nav>
+			<!--<a href="javascript:void(0)" class="sel">Lorem</a>
+			<a href="javascript:void(0)">Ipsum</a>-->
+			<a href="https://bitbucket.org/sketchpunk/sketchpunk.bitbucket.io/src/master/">[ GOTO SOURCE ]</a>
+		</nav>
+	</header>
+	<p>As I create more 3D tools that requires user interaction, its important to be able to handle ray interection on various
+		shapes that may exist in the 3d scene. So this is a collection of various way to handle rays.</p>
+
+	<section>
+		<ol>
+			<li><a href="001_plane.html">Plane</a> intersecting a plane that is defined by a point and normal dir.</li>
+			<li><a href="002_point.html">Points</a> use a ray to intersect random points in 3d space.</li> 
+			<li><a href="003_segments.html">Segment / Line</a> use a ray to test if it touches line in 3d space</li> 
+			<li><a href="004_triangle.html">Triange</a> How to test if a ray hits a single forward facing triangle.</li> 
+			<li><a href="005_quad.html">Quad</a> Test if a ray hits a quad in 3d space.</li> 
+			<li><a href="006_circle.html">Circle</a> How to rest if a ray hits a 2D circle in 3D space.</li> 
+			<li><a href="007_sphere.html">Sphere</a> How to test if a ray hits a sphere in 3d space.</li>
+			<li><a href="008_aabb.html">Axis Align Bounding Box (AABB)</a> Test a ray on a 3D cube that does not rotate.</li> 
+			<li><a href="009_obb.html">Oriented Bounding Box (OBB)</a> Testing a ray on a cube that may be rotated without transforming the ray to localspace.</li> 
+			<li><a href="010_capsule.html">Capsule</a> Test ray on a combination of an infinate cylinder and spheres.</li> 
+			<li><a href="011_voxel.html">Voxel Chunk</a> Test all the voxels a ray goes through in a voxel chunk.</li> 
+			<li><a href="012_local.html">LocalSpace</a> Transform a ray to local space of an object for testing.</li>
+			<li><a href="013_mesh.html">Mesh</a> Loop through all the triangles of a mesh to test a ray.</li> 
+			<!-- <li><a href=""></a></li> -->
+		</ol>
+	</section>
+</page-layout>
+
+<!--###############################################################
+LOAD JAVASCRIPT AT THE BOTTOM -->
+<script src="/js/PageLayout.js"></script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<html>
+<body style="background-color:#25282F;">
+
+<canvas id="canvas" style="border:1px solid red;"></canvas>
+
+<script>
+class Canvas{
+	constructor( elmName, w = null, h = null ){
+		this.canvas		= document.getElementById(elmName);
+		this.ctx		= this.canvas.getContext("2d");
+		this.offsetX	= 0;
+		this.offsetY	= 0;
+		this.clearX		= 0;
+		this.clearY		= 0;
+
+		if( w && h ) 	this.size( w, h );
+		else 			this.size( window.innerWidth, window.innerHeight );
+	}
+
+
+	//////////////////////////////////////////////////////////////////
+	// Coord System
+	//////////////////////////////////////////////////////////////////
+		center(){
+			this.ctx.translate(this.width * 0.5, this.height * 0.5);
+			this.clearX = -this.width * 0.5;
+			this.clearY = -this.height * 0.5;
+			return this;
+		}
+
+		flip_y(){ this.ctx.scale(1,-1); return this; }
+
+	//////////////////////////////////////////////////////////////////
+	// Style
+	//////////////////////////////////////////////////////////////////
+		line_width(v){ this.ctx.lineWidth = v; return this; }
+		fill(v){ this.ctx.fillStyle = v; return this; }
+		stroke(v){ this.ctx.strokeStyle = v; return this; }
+		both(v){ this.ctx.strokeStyle = v; this.ctx.fillStyle = v; return this; }
+
+		style(cFill = "#ffffff", cStroke = "#505050", lWidth = 3){
+			if(cFill != null) 	this.ctx.fillStyle		= cFill;
+			if(cStroke != null) this.ctx.strokeStyle	= cStroke;
+			if(lWidth != null) 	this.ctx.lineWidth		= lWidth;
+			return this;
+		}
+
+		dash(){ this.ctx.setLineDash( [4,5] ); return this; }
+		undash(){ this.ctx.setLineDash( [0] ); return this; }
+
+		font(font = "12px verdana", textAlign="left"){
+			if(font)		this.ctx.font		= font;
+			if(textAlign)	this.ctx.textAlign	= textAlign;
+			return this;
+		}
+
+
+	//////////////////////////////////////////////////////////////////
+	// Misc
+	//////////////////////////////////////////////////////////////////
+		fill_color(c){ return this.fill(c).rect( this.clearX, this.clearY, this.width, this.height, 1 ); }
+		clear(){ this.ctx.clearRect(this.clearX, this.clearY, this.width, this.height); return this; }
+
+		//Set the size of the canvas html element and the rendering view port
+		size( w = 500, h = 500 ){
+			var box				= this.canvas.getBoundingClientRect();
+			this.offsetX		= box.left;	//Help get X,Y in relation to the canvas position.
+			this.offsetY		= box.top;
+			//TODO, might need to replace offset with mouseOffset
+			this.mouseOffsetX	= this.canvas.scrollLeft + this.canvas.offsetLeft; 	//box.left;	// Help get X,Y in relation to the canvas position.
+			this.mouseOffsetY	= this.canvas.scrollTop + this.canvas.offsetTop; 	//box.top;
+
+			//set the size of the canvas, on chrome we need to set it 3 ways to make it work perfectly.
+			this.canvas.style.width		= w + "px";
+			this.canvas.style.height	= h + "px";
+			this.canvas.width			= w;
+			this.canvas.height			= h;
+			this.width 					= w;
+			this.height 				= h;
+
+			return this;
+		}
+
+		font(font = "12px verdana", textAlign="left"){
+			if(font)		this.ctx.font		= font;
+			if(textAlign)	this.ctx.textAlign	= textAlign;
+			return this;
+		}
+
+		restore_transform(){ this.ctx.restore(); return this; }
+		save_transform( vpos = null, ang = null, vscale = null ){
+			this.ctx.save();
+			if(vpos)		this.ctx.translate( vpos[0], vpos[1] );
+			if(ang != null)	this.ctx.rotate( ang );
+			if(vscale)		this.ctx.scale( vscale[0], vscale[1] );
+			return this;
+		}
+		
+
+	//////////////////////////////////////////////////////////////////
+	// Drawing
+	//////////////////////////////////////////////////////////////////
+		draw( d ){
+			if( (d & 1) != 0 ) this.ctx.fill();
+			if( (d & 2) != 0 ) this.ctx.stroke();
+		}
+
+		//++++++++++++++++++++++++++++++
+
+		text( txt, x=0, y=0, draw=1 ){ 
+			//this.ctx.font = "Bold 30px Arial";
+			if( (draw & 1) != 0 ) this.ctx.fillText( txt, x, y );
+			if( (draw & 2) != 0 ) this.ctx.strokeText( txt, x, y );
+			return this;
+		}
+
+		//++++++++++++++++++++++++++++++
+
+		circle(x, y, radius = 10, draw = 1 ){
+			const p2 = Math.PI * 2;
+			this.ctx.beginPath();
+			this.ctx.arc(x, y, radius ,0, p2, false );
+			this.draw( draw );
+			return this;
+		}
+
+		circle_vec( v, radius = 10, draw = 1 ){
+			const p2 = Math.PI * 2;
+			this.ctx.beginPath();
+			this.ctx.arc( v[0], v[1], radius ,0, p2, false );
+			this.draw( draw );
+			return this;
+		}
+
+
+		arc( p, radius, ang_a, ang_b, draw = 1 ){
+			this.ctx.beginPath();
+			this.ctx.arc( p[0], p[1], radius, ang_a, ang_b, false );
+			this.draw( draw );
+			return this;
+		}
+
+
+		//++++++++++++++++++++++++++++++
+
+		line_vec( p0, p1 ){
+			this.ctx.beginPath();
+			this.ctx.moveTo( p0[0], p0[1] );
+			this.ctx.lineTo( p1[0], p1[1] );
+			this.ctx.stroke();
+			return this;
+		}
+
+		line_vec_inc( state=0, p ){
+			switch( state ){
+				case 0:
+					this.ctx.beginPath();
+					this.ctx.moveTo( p[0], p[1] );
+					break;
+				case 1:
+					this.ctx.lineTo( p[0], p[1] );
+					break;
+				case -1:
+					this.draw( 2 );
+					break;
+			}
+			return this;
+		}
+	}
+</script>
+
+<script>
+	let $	= new Canvas("canvas", 900, 600 ).center().flip_y().font("18px verdana");
+
+	window.addEventListener( "load", function(){
+		cache_tan_chart();
+		draw();
+		loop();
+	});
+	
+	const PI_2			= Math.PI * 2;
+	const RADIUS		= 80;
+	const RATE 			= 1 * Math.PI / 180;
+
+	const ORIGIN		= [ -300, 150 ];
+	
+	const SIN_AA		= [ ORIGIN[0] + 130, ORIGIN[1] + RADIUS ];
+	const SIN_AB		= [ ORIGIN[0] + 130, ORIGIN[1] - RADIUS ];
+	const SIN_BA		= [ SIN_AA[0] + 250, ORIGIN[1] + RADIUS ];
+	const SIN_BB		= [ SIN_AA[0] + 250, ORIGIN[1] - RADIUS ];
+
+	const COS_AA		= [ ORIGIN[0] + RADIUS, ORIGIN[1] - 130 ];
+	const COS_AB		= [ ORIGIN[0] - RADIUS, ORIGIN[1] - 130 ];
+	const COS_BA		= [ ORIGIN[0] + RADIUS, COS_AA[1] - 250 ];
+	const COS_BB		= [ ORIGIN[0] - RADIUS, COS_AA[1] - 250 ];
+
+	const TAN_AA		= [ ORIGIN[0] + 130, ORIGIN[1] - 130 ];
+	const TAN_AB		= [ TAN_AA[0], TAN_AA[1] - 250 ];
+	const TAN_BA		= [ TAN_AA[0] + 250, TAN_AA[1] ];
+	const TAN_BB		= [ TAN_BA[0], TAN_AB[1] ];
+	const TAN_POS 		= [ TAN_AA[0], (TAN_AA[1] + TAN_AB[1]) / 2 ];
+
+	const SAMPLE_LEN	= 30;
+	const A_INC = PI_2 / SAMPLE_LEN;
+	const S_INC = 250 / SAMPLE_LEN;
+
+	let TAN_CACHE_A 	= [];
+	let TAN_CACHE_B 	= [];
+	let TAN_CACHE_C 	= [];
+	let ANGLE			= .7;
+
+	
+	function draw(){
+		ANGLE = (ANGLE + RATE) % PI_2;
+		let sin = Math.sin( ANGLE ),
+			cos = Math.cos( ANGLE ),
+			tan = Math.tan( ANGLE ),
+			x 	= RADIUS * cos,
+			y 	= RADIUS * sin,
+			cx 	= ORIGIN[0] + x,
+			cy 	= ORIGIN[1] + y,
+			xx, yy, s, i;
+
+		$.clear();
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			
+			$	.style( "#606060", "#606060", 4 ).undash()
+				.circle_vec( ORIGIN, RADIUS, 2 )	// Main Circle
+				.circle_vec( ORIGIN, 10, 1 ); 		// Center Point
+
+			$	.style( "#ffffff", "#ffffff", 15 )
+				.arc( ORIGIN, 30, 0, ANGLE, 2 );	// Angle Arc
+
+			$	.line_width( 1 )
+				.line_vec( ORIGIN, [cx,cy] );		// Angle Line
+
+			xx = sin * 80 * tan;					// Tangent Line / Derivative of a Circle
+			yy = -cos * 80 * tan;
+			$	.stroke( "#FFA726" ).line_width( 2 )
+				.line_vec( [cx,cy], [cx+xx,cy+yy] );
+
+
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		TAN GRAPH */
+
+			$.dash().both( "#ffff00" );
+
+			$.line_vec_inc( 0, [ TAN_CACHE_A[0], TAN_CACHE_A[1] ] );
+			for( i=2; i < TAN_CACHE_A.length; i+=2 ) $.line_vec_inc( 1, [ TAN_CACHE_A[i], TAN_CACHE_A[i+1] ] );
+			$.line_vec_inc( -1 );
+
+			$.line_vec_inc( 0, [ TAN_CACHE_B[0], TAN_CACHE_B[1] ] );
+			for( i=2; i < TAN_CACHE_B.length; i+=2 ) $.line_vec_inc( 1, [ TAN_CACHE_B[i], TAN_CACHE_B[i+1] ] );
+			$.line_vec_inc( -1 );
+
+			$.line_vec_inc( 0, [ TAN_CACHE_C[0], TAN_CACHE_C[1] ] );
+			for( i=2; i < TAN_CACHE_C.length; i+=2 ) $.line_vec_inc( 1, [ TAN_CACHE_C[i], TAN_CACHE_C[i+1] ] );
+			$.line_vec_inc( -1 );
+
+			$.circle(
+				TAN_POS[0] + 250 * ANGLE / PI_2,
+				TAN_POS[1] + 40 * tan,
+				5
+			);
+
+			$ 	.undash().stroke( "#606060" )
+				.line_width( 2 )
+				.line_vec( TAN_AA, TAN_AB )
+				.line_vec( TAN_BA, TAN_BB );
+
+
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		 SIN GRAPH */
+			xx = SIN_AA[0];
+			yy = ORIGIN[1];
+			
+			$.line_vec( SIN_AA, SIN_AB );
+			$.line_vec( SIN_BA, SIN_BB );
+
+			$	.dash().both("#00ff00").line_width( 1 )
+				.line_vec( [cx,cy], [ SIN_AA[0], cy ] ) // Follow Line
+				.circle_vec( [ SIN_AA[0], cy ], 5, 1 );
+
+			$.line_vec_inc( 0, [ xx, cy ] );
+			for( i=1; i <= SAMPLE_LEN; i++ ){
+				s = RADIUS * Math.sin( ANGLE - i * A_INC );
+				$.line_vec_inc( 1, [ xx + i * S_INC, yy + s ] );
+			}
+			$.line_vec_inc( -1 );
+		
+
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		 COS GRAPH */
+			xx = ORIGIN[0];
+			yy = COS_AA[1];
+
+			$	.undash().stroke("#606060").line_width( 2 )
+				.line_vec( COS_AA, COS_AB )
+				.line_vec( COS_BA, COS_BB );
+
+			$	.dash().both("#85C1E9").line_width( 1 )
+				.line_vec( [cx,cy], [ cx, COS_AA[1] ] ) // Follow Line
+				.circle_vec( [ cx, COS_AA[1] ], 5, 1 );
+
+			$.line_vec_inc( 0, [ cx, yy ] );
+			for( i=1; i <= SAMPLE_LEN; i++ ){
+				s = RADIUS * Math.cos( ANGLE - i * A_INC );
+				$.line_vec_inc( 1, [ xx + s, yy - i * S_INC ] );
+			}
+			$.line_vec_inc( -1 );
+		
+
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Text */
+			$	.style( "#ffffff", "#ffffff", 2 )
+				.circle( cx, cy, 5, 1 );			// Moving Circle Point
+
+		
+			$.save_transform( null, null, [ 1, -1 ] );
+
+			let angle = (ANGLE * 180 / Math.PI).toFixed( 2 );
+			let rad = ANGLE.toFixed(4);
+
+			$.font( "18px monospace", "left" );
+			$.fill("#ffffff").text( "Rad ( "+angle+"\xB0 ) = " + rad, 120, -215, 1 );
+			$.fill("#00ff00").text( "Sin ( "+rad+" ) = " + sin.toFixed(4), 120, -195, 1 );
+			$.fill("#85C1E9").text( "Cos ( "+rad+" ) = " + cos.toFixed(4), 120, -175, 1 );
+			$.fill("#ffff00").text( "Tan ( "+rad+" ) = " + tan.toFixed(4), 120, -155, 1 );
+
+			$	.fill( "#FFA726" )
+				.font( "14px monospace", "left" )
+				.text( "Derivative of a Circle (Tangent Line)", 120, -115, 1 )
+				.font( "18px monospace", "left" )
+				.text( "x = sin( rad )  = " + sin.toFixed(4), 120, -90, 1 )
+				.text( "y = -cos( rad ) = " + (-cos).toFixed(4), 120, -70, 1 );
+
+			$.restore_transform();
+	}
+
+	function cache_tan_chart(){
+		const SAMPLE_LEN	= 60;
+		const A_INC = PI_2 / SAMPLE_LEN;
+		const S_INC = 250 / SAMPLE_LEN;
+		let xx = TAN_POS[0];
+		let yy = TAN_POS[1];
+
+		for( i=0; i < 13; i++ ){
+			s = 40 * Math.tan( i * A_INC );
+			TAN_CACHE_A.push( xx + i * S_INC, yy + s );
+		}
+
+		for( i=18; i < 43; i++ ){
+			s = 40 * Math.tan( i * A_INC );
+			TAN_CACHE_B.push( xx + i * S_INC, yy + s );
+		}
+
+		for( i=48; i < 61; i++ ){
+			s = 40 * Math.tan( i * A_INC );
+			TAN_CACHE_C.push( xx + i * S_INC, yy + s );
+		}
+	}
+
+	//####################################################################
+	let prev_time = performance.now();
+	let loop_cnt = 0;
+	let frame_rate = 0.01;
+	function loop(){
+		let time	= performance.now();
+		let t 		= (time - prev_time) * 0.001; // in sec
+		if( t >= frame_rate ){
+			draw();
+			prev_time = time;
+		}
+		window.requestAnimationFrame( loop );
+	}
+</script>
+
+</body>
+</html>

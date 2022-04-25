@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<script type="module">
+	import App, { Maths, Vec3 }	from "./lib/fungi/App.js";
+	import XhrQueue 			from "./lib/fungi/lib/XhrQueue.js";
+	import Motion				from "./lib/fungi.test/Motion.js";
+
+	// ORIGINAL IDEA : https://twitter.com/thespite/status/1267761397276033024
+	// DEMO : https://www.clicktorelease.com/tmp/breel/e3/origin/
+
+	// https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
+
+	//#####################################################
+	App.builder( true, true )
+		.set_camera(0, 20, 8, 0, 2.0, 0)
+		.add(init)
+		.render_loop( on_render )
+		//.render_on_mouse()
+		.build();
+
+	//#####################################################
+	let gAnim;
+	function on_render( dt, ss ){ gAnim( dt ); }
+
+	async function init(){
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Download Texture Mask of the Globe
+		let img = await XhrQueue.add( "../files/img/map_mask.jpg").then();
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Render Mask onto texture, so we can get pixel information
+		let canvas 			= document.createElement( "canvas" );
+		let ctx				= canvas.getContext( "2d" );
+		canvas.width		= img.width;
+		canvas.height		= img.height;
+		canvas.style.width	= img.width + "px";
+		canvas.style.height	= img.height + "px";
+
+		ctx.drawImage( img, 0, 0 );
+		let px_ary = ctx.getImageData( 0, 0, img.width, img.height );
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Generate Points based on Mask
+		globe_points( px_ary, img.width, img.height );
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		// Add rotation 
+		gAnim = Motion.rot_by( App.Debug.ePnt, -30, "y" );
+		return true;
+	}
+
+	function globe_points( rgba_ary, px_w, px_h ){
+		const PI_2		= Math.PI * 2;
+		const Y_OFFSET	= 2.5;
+
+		let radius		= 2;			// Sphere Radius
+		let pos			= [0,0,0];
+		let pnt_space	= 0.1;
+		let pi_steps	= Math.floor( (PI_2 * radius * 0.5) / pnt_space );
+
+		let angle, ring_steps, arc_len, ring_radius, offset, vert_t, hori_t;
+		let px_y, px_x, px, color, size;
+
+		for( let i=1; i < pi_steps; i++ ){
+			// Angle going Vertical
+			vert_t	= ( i / pi_steps );							// Lerp Time
+			angle	= 180 * vert_t - 90;						// Horizontal Angle
+			px_y	= Math.floor( px_h * (1-vert_t) ) * px_w;	// How many pixel rows down?
+			Maths.polar_to_cartesian( 90, angle, radius, pos );
+
+			// using the X axis of the point as the radius of the ring.
+			ring_radius = pos[ 0 ];
+
+			// Using Arc Length to help figure out distance around the ring.
+			arc_len = PI_2 * ring_radius;
+
+			// How many steps to try to keep the spacing of the points
+			ring_steps	= Math.floor( arc_len / pnt_space );
+
+			// Try to keep the rings divisible by 8
+			let re = (ring_steps % 8);
+			if( re > 4 )	ring_steps += 8 - re;
+			else 			ring_steps -= re;
+			
+			// spiral the points out a lil angle
+			offset = vert_t * PI_2 * 0.3;
+
+			// Move the sphere up away from origin.
+			pos[ 1 ] += Y_OFFSET;
+
+			// Create Ring			
+			for( let j=0; j < ring_steps; j++ ){
+				hori_t	= ( j / ring_steps )						// Vertical Lerp Time
+				angle	= PI_2 * hori_t + offset;					// Horizontal Angle
+				px_x	= Math.floor( px_w * (1-hori_t) ) + px_y;	// Pixel Index
+				px		= rgba_ary.data[ px_x * 4 ];				// Pixel's R value
+
+				pos[ 0 ] = ring_radius * Math.cos( angle );			// 2D Circle Coords
+				pos[ 2 ] = ring_radius * Math.sin( angle );
+
+				color = ( px < 128 )? "#00ff00" : "#006666";
+				size = ( px < 128 )? 0.04 : 0.03;
+				App.Debug.pnt( pos, color, size, 1 );
+			}
+		}
+	}
+</script>
+<page-layout></page-layout>

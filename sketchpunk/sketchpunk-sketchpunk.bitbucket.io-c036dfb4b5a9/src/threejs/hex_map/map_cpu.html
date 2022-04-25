@@ -1,0 +1,472 @@
+<!DOCTYPE html><html><head><title></title></head><body><script type="module">
+
+import Starter, { THREE }   from "./lib/starter.js";
+import HexagonPillar        from "./oito/geometry/HexagonPillar.js";
+import { Layout }           from './Hex.js';
+import PropPanel	    	from "./lib/PropPanelv2.js";
+import CubicNoise           from "./lib/CubicNoise.js";
+
+import Gltf2                from "./oito/misc/Gltf2.js";
+import Gltf2Util            from "./oito/misc/Gltf2Util.js";
+
+let App, gLayout, gMat, gGeo, gTimeout, gAssets = [];
+
+let CONFIG = {
+    coord       : null,
+    height      : null,
+
+    offset      : [ 0,0 ],
+
+    oct         : 2,
+    period      : 0.3,
+    periodFreq  : 2, 
+    falloff     : 2, 
+    vox         : 0,
+
+    maxHeight   : 2,
+    power       : 2.2,
+    lowerBound  : 0,
+};
+
+
+window.addEventListener( "load", _=>{
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    App = new Starter( { webgl2:true, grid:false } );
+    App.set_camera( 0, 28, 35, [0,0.0,0] ).render();
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    gMat = getRawShader();
+    gGeo = createInstancedHex();
+
+    let mesh = new THREE.Mesh( gGeo, gMat );
+
+    App.add( mesh );
+    App.add( createHexBoard() );
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    loadAssets();
+    initUI();
+});
+
+//#region Creating Hex Map
+// Compute XY Worldspace positions and Hex Grid Coordinates
+function hexGrid( n ){
+    let x, y, yn, p;
+
+    gLayout = new Layout( 0.5 );
+    const coord  = [];
+    const pos    = [];
+    //const n      = 1;
+
+    for( x=-n; x <= n; x++ ){
+        y   = Math.max( -n, -x-n );
+        yn  = Math.min(  n, -x+n );
+        
+        for( y; y <= yn; y++ ){
+            p = gLayout.axialToPixel( x, y );
+
+            pos.push( p[0], 0, p[1] );
+            coord.push( x, y );
+        }
+    }
+
+    return [ pos, coord ];
+}
+
+// Create all the hex columns in an instanced mesh
+function createInstancedHex(){
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    const [ ipos, icoord ]  = hexGrid( 16 );
+    CONFIG.coord  = icoord;
+    CONFIG.height = computeNoiseHeight();
+
+    const inst_pos          = new Float32Array( ipos );
+    const inst_height       = new Float32Array( CONFIG.height );
+    
+    //pointyUp = true, radius = 0.5, cornerScale = 0.2, cornerDiv = 3, capSize = 0.2, offsetHeight = 0.5
+    const geo = HexagonPillar.get( false, 0.5, 0.04, 5, 0.04, 0.0 );
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Define Geometry Object
+    const bGeo = new THREE.InstancedBufferGeometry();
+    bGeo.setIndex( geo.indices );
+    bGeo.setAttribute( "position", new THREE.BufferAttribute( new Float32Array( geo.vertices ), 3 ) );
+    bGeo.setAttribute( "normal",   new THREE.BufferAttribute( new Float32Array( geo.normals ), 3 ) );
+    bGeo.setAttribute( "i_pos",    new THREE.InstancedBufferAttribute( inst_pos, 3 ) );
+    bGeo.setAttribute( "i_height", new THREE.InstancedBufferAttribute( inst_height, 1 ) );
+
+    return bGeo;
+}
+
+// Make one Big Hex Board that hides under all the columns
+function createHexBoard(){
+    //pointyUp = true, radius = 0.5, cornerScale = 0.2, cornerDiv = 3, capSize = 0.2, offsetHeight = 0.5
+    const geo = HexagonPillar.get( true, 14, 0.02, 10, 0.1, 0.2 );
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Define Geometry Object
+    const bGeo = new THREE.BufferGeometry();
+    bGeo.setIndex( geo.indices );
+    bGeo.setAttribute( "position", new THREE.BufferAttribute( new Float32Array( geo.vertices ), 3 ) );
+    bGeo.setAttribute( "normal",   new THREE.BufferAttribute( new Float32Array( geo.normals ), 3 ) );
+
+    return new THREE.Mesh( bGeo, new THREE.MeshPhongMaterial( { color:0x73B3B9 } ) );
+}
+//#endregion
+
+//#region Handle Hexagon Height on the CPU
+function computeNoiseHeight(){
+    let ary = [];
+    let c   = CONFIG.coord;
+    let x, y, n;
+
+    for( let i=0; i < c.length; i+=2 ){
+        x = c[ i ]   + CONFIG.offset[ 0 ];
+        y = c[ i+1 ] + CONFIG.offset[ 1 ];
+        n = CubicNoise.octaves( x, y, 0, 
+            CONFIG.oct,
+            CONFIG.period, 
+            CONFIG.periodFreq, 
+            CONFIG.falloff, 
+            CONFIG.vox
+        );
+
+        ary.push( Math.max( Math.pow( n * CONFIG.maxHeight, CONFIG.power ), CONFIG.lowerBound ) );
+    }
+    
+    return ary;
+}
+function updateNoiseHeight(){
+    const attrib = gGeo.attributes.i_height;
+    CONFIG.height = computeNoiseHeight();
+
+    attrib.array = new Float32Array( CONFIG.height );
+    attrib.needsUpdate = true;
+    
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if( gTimeout != null ) clearTimeout( gTimeout );
+    gTimeout = setTimeout( ()=>{
+        gTimeout = null;
+        placeAssets();
+    }, 750 );
+}
+//#endregion
+
+//#region Placing 3D Assets
+async function loadAssets(){
+    let gltf = await Gltf2.fetch( './kaykit_medieval_obj_demo.gltf' );
+    let scl = 0.35;
+    let names = [  'detail_rocks', 'mountain', 'castle', 'barracks', 'detail_hill', 'forest', 'mill',  'well', ];
+    for( const n of names ){
+        const mesh = Gltf2Util.loadMesh( gltf, n );
+        mesh.scale.set( scl, scl, scl );
+
+        gAssets.push( mesh );
+        App.add( mesh );
+
+        for( let i=0; i < 10; i++ ){
+            const m = mesh.clone();
+            gAssets.push( m );
+            App.add( m );
+        }
+    }
+
+    placeAssets();
+}
+
+function placeAssets(){
+    let hexLen = CONFIG.height.length;
+
+    for( const a of gAssets ){
+        let i   = Math.floor( hexLen * Math.random() );
+        let cx  = CONFIG.coord[ i * 2 ];
+        let cy  = CONFIG.coord[ i * 2 + 1 ];
+        let pos = gLayout.axialToPixel( cx, cy );
+
+        a.position.x = pos[ 0 ];
+        a.position.z = pos[ 1 ];
+        a.position.y = CONFIG.height[ i ];
+    }
+}
+//#endregion
+
+//#region Shader uses noise to create height map at runtime for the instanced hex columns.
+function getRawShader(){
+    const mat = new THREE.RawShaderMaterial({ 
+        vertexShader	: VERT_SRC, 
+        fragmentShader	: FRAG_SRC, 
+        transparent 	: true,
+        side            : THREE.DoubleSide,
+        uniforms 		: {
+            
+            UMaxHeight   : { value : 2.0 },
+            UHideHeight  : { value : 0.6 },
+            UGradientWgt : { value: [ 0.0, 0.4, 0.5, 0.6, 0.7 ] },
+            UGradient    : { value: [ 
+                new THREE.Color( 0xA489B2 ),
+                new THREE.Color( 0xEF6775 ), 
+                new THREE.Color( 0xF2BFD0 ), 
+                new THREE.Color( 0xF0EAEA ), 
+                new THREE.Color( 0xFBC580 ),
+            ] },
+        } 
+    });
+
+    return mat;
+}
+
+const VERT_SRC = `#version 300 es
+in vec3  position;
+in vec3  normal;
+in vec3  i_pos;
+in float i_height;
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat3 normalMatrix;
+uniform mat4 projectionMatrix;
+
+out vec3 frag_wpos;
+out vec3 frag_norm;
+out vec3 frag_color;
+
+out float frag_test;
+
+///////////////////////////////////////////////////////////////////////////////
+
+uniform float UMaxHeight;//    = 2.0;
+uniform float UHideHeight;//   = 0.6;
+
+uniform float UGradientWgt[5];
+uniform vec3  UGradient[5];
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+vec3 rgb( int c ){
+    return vec3(
+        float( ( c >> 16 ) & 0xff ) * 0.00392156863,
+        float( ( c >> 8 ) & 0xff ) * 0.00392156863,
+        float( c & 0xff ) * 0.00392156863
+    );
+}
+
+vec3 colorRamp_Grad( vec3[5] color, float[5] wgt, float t, int i ){
+    if( t >= wgt[ i ] ) return color[ i ];
+    if( t <= wgt[ 0 ] ) return color[ 0 ];
+
+    for( int j=i-1; j >= 0; j-- ){
+        if( wgt[ j ] < t ){
+            //float mt = ( t - wgt[ j ] ) / ( wgt[ j+1 ] - wgt[ j ] );  // Remap T between A & B
+            return mix( 
+                color[ j ], 
+                color[ j+1 ],
+                smoothstep( wgt[ j ], wgt[ j+1 ], t )
+            );
+        }
+    }
+
+    return color[ 0 ];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void main(){
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // COLOR GRADIANT
+
+    //vec3 gradColor[5]	= vec3[]( rgb(0xA489B2), rgb(0xEF6775), rgb(0xF2BFD0), rgb(0xF0EAEA), rgb(0xFBC580) );
+    //float gradWgt[5]	= float[]( 0.0, 0.4, 0.5, 0.6, 0.7 );
+
+    /*
+    if( UGradient == 1 ){
+        gradColor	= vec3[]( rgb(0x403658), rgb(0xAD70FC), rgb(0xE683F7), rgb(0xFCAFDD), rgb(0xEEEBF4) );
+        gradWgt	    = float[]( 0.0, 0.4, 0.5, 0.6, 0.7 );
+    }
+
+    if( UGradient == 2 ){
+        gradColor	= vec3[]( rgb(0xA489B2), rgb(0xBFE1E0), rgb(0x8BC1B7), rgb(0xEEF4D8), rgb(0xF0EAEA) );
+        gradWgt	    = float[]( 0.4, 0.5, 0.55, 0.6, 0.65 );
+    }
+
+    if( UGradient == 3 ){
+        gradColor	= vec3[]( rgb(0x342F33), rgb(0xAB9387), rgb(0xCDBEB9), rgb(0x6F3738), rgb(0xF8CF97) );
+        gradWgt	    = float[]( 0.0, 0.4, 0.5, 0.6, 0.7 );
+    }
+    */
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // HEIGHT MAP
+    vec3 pos    = position;
+    float n     = i_height / UMaxHeight;
+
+    if( gl_VertexID >= 36 ) pos.y += i_height;  // Move Pillar Cap up/down
+
+    pos += i_pos;                               // Move to Instanced Position
+
+    if( i_height < UHideHeight ) pos *= 0.0;    // Below Min Height, Destroy it so not visible
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // RESULTS
+    vec4 ws_pos	= modelMatrix * vec4( pos, 1.0 );
+    
+    frag_wpos   = ws_pos.xyz;
+    frag_norm   = normalMatrix * normal;
+    frag_color  = colorRamp_Grad( UGradient, UGradientWgt, n, 4 );
+
+    gl_Position	= projectionMatrix * viewMatrix * ws_pos;	
+}
+`;
+
+const FRAG_SRC = `#version 300 es
+precision mediump float;
+
+out vec4 out_color;
+
+in vec3 frag_wpos;
+in vec3 frag_norm;
+in float frag_test;
+in vec3 frag_color;
+
+uniform vec3 cameraPosition;
+uniform vec3 color;
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define RECIPROCAL_PI 0.3183098861837907
+#define saturate( a ) clamp( a, 0.0, 1.0 )
+
+vec3 F_Schlick( const in vec3 f0, const in float f90, const in float dotVH ) {
+	float fresnel = exp2( ( - 5.55473 * dotVH - 6.98316 ) * dotVH );
+	return f0 * ( 1.0 - fresnel ) + ( f90 * fresnel );
+}
+
+float D_BlinnPhong( const in float shininess, const in float dotNH ) {
+    return RECIPROCAL_PI * ( shininess * 0.5 + 1.0 ) * pow( dotNH, shininess );
+}
+
+vec3 BRDF_Lambert( const in vec3 diffuseColor ){ return RECIPROCAL_PI * diffuseColor; }
+
+vec3 BRDF_BlinnPhong( const in vec3 lightDir, const in vec3 viewDir, const in vec3 normal, const in vec3 specularColor, const in float shininess ) {
+	vec3 halfDir    = normalize( lightDir + viewDir );
+	float dotNH     = saturate( dot( normal, halfDir ) );
+	float dotVH     = saturate( dot( viewDir, halfDir ) );
+	vec3 F          = F_Schlick( specularColor, 1.0, dotVH );
+	float G         = 0.25; // It only outputs a constant - G_BlinnPhong_Implicit();
+	float D         = D_BlinnPhong( shininess, dotNH );
+
+	//return F * ( G * D );
+    return F * G; // D Causes the big Spot light kind of thing to appear
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void main(){
+    // STRIPPED DOWN MeshPhongMaterial ( Prob screwed up somewhere )
+
+    vec3 baseColor          = frag_color; //color;
+
+    vec3 lightPos           = vec3( 4.0, 10.0, 4.0 );
+    vec3 lightColor         = vec3( 1.0 );
+    vec3 lightDir           = normalize( lightPos - frag_wpos );
+
+    vec3  viewDir           = normalize( cameraPosition - frag_wpos );
+    vec3  norm              = normalize( frag_norm );
+    float dotNL             = saturate( dot( norm, lightDir ) );
+
+    vec3 indirectDiffuse    = vec3( 0.0 );
+    vec3 directDiffuse      = vec3( 0.0 );
+    vec3 directSpecular     = vec3( 0.0 );
+
+    vec3 specularColor      = vec3( 1.0 );
+    float specularShininess = 400.0;
+    float specularStrength  = 1.0;
+
+    vec3 ambientLightColor  = vec3( 1.1 );
+    vec3 irradiance         = dotNL * lightColor;
+
+    directDiffuse           += irradiance * BRDF_Lambert( baseColor );
+	directSpecular          += irradiance * BRDF_BlinnPhong( lightDir, viewDir, norm, specularColor, specularShininess ) * specularStrength;
+    indirectDiffuse         += ambientLightColor * BRDF_Lambert( baseColor );
+    
+    out_color.rgb           = directDiffuse + indirectDiffuse + directSpecular;
+    out_color.a             = 1.0;
+    
+    //out_color = vec4( color, 1.0 );
+
+    //if( frag_test < 0.4 ) out_color.rgb = vec3( 1.0, 0.0, 0.0 );
+}`;
+//#endregion
+
+//#####################################################
+
+function initUI(){
+    onInput( "UOctave", updateMaterial );
+    onInput( "UPeriod", updateMaterial );
+    onInput( "UFalloff", updateMaterial );
+    onInput( "UPeriodFreq", updateMaterial );
+    onInput( "UVox", updateMaterial );
+
+    onInput( "UMaxHeight", updateMaterial );
+    onInput( "UPower", updateMaterial );
+    onInput( "ULowerBound", updateMaterial );
+    onInput( "UHideHeight", updateMaterial );
+
+    onInput( "UOffsetX", updateMaterial );
+    onInput( "UOffsetY", updateMaterial );
+}
+
+function onInput( name, fn ){ document.getElementById( name ).addEventListener( "input", fn ); }
+function updateMaterial( e ){
+    let uniform = e.srcElement.id;
+
+    switch( uniform ){
+        case "UOctave"      : CONFIG.oct         = parseInt( e.detail.value );  updateNoiseHeight(); break;
+        case "UPeriod"      : CONFIG.period      = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+        case "UFalloff"     : CONFIG.falloff     = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+        case "UPeriodFreq"  : CONFIG.periodFreq  = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+        case "UVox"         : CONFIG.vox         = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+
+        case "UPower"       : CONFIG.power       = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+        case "ULowerBound"  : CONFIG.lowerBound  = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+
+        case "UHideHeight"  : gMat.uniforms[ "UHideHeight" ].value  = parseFloat( e.detail.value ); break;
+
+        case "UOffsetX"     : CONFIG.offset[ 0 ] = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+        case "UOffsetY"     : CONFIG.offset[ 1 ] = parseFloat( e.detail.value ); updateNoiseHeight(); break;
+
+        case "UMaxHeight"   : 
+            gMat.uniforms[ "UMaxHeight" ].value   = parseFloat( e.detail.value );
+            CONFIG.maxHeight = parseFloat( e.detail.value );
+            updateNoiseHeight();
+        break;
+    }
+}
+</script>
+
+<prop-panel-btncont open="true" panelWidth="350px">
+    <prop-panel foot="Hexagon Map">
+        <prop-group label="Cubic Noise" open="false">
+            <prop-row label="Octave"><slide-input id="UOctave" min="1" max="10" value="2" step="1"></slide-input></prop-row>
+            <prop-row label="Period"><slide-input id="UPeriod" min="0.01" max="1" value="0.3" step="0.01"></slide-input></prop-row>
+            
+            <prop-row label="PeriodFreq"><slide-input id="UPeriodFreq" min="0.25" max="16" value="2.0" step="0.1"></slide-input></prop-row>
+            <prop-row label="Falloff"><slide-input id="UFalloff" min="0.25" max="10" value="2.0" step="0.5"></slide-input></prop-row>
+
+            <prop-row label="Vox"><slide-input id="UVox" min="0" max="10" value="0" step="0.1"></slide-input></prop-row>
+        </prop-group>
+
+        <prop-group label="Other" open="true">
+            <prop-row label="Max Height"><slide-input id="UMaxHeight" min="0.1" max="5" value="2" step="0.1"></slide-input></prop-row>
+            <prop-row label="Power"><slide-input id="UPower" min="0.1" max="5" value="2.2" step="0.1"></slide-input></prop-row>
+            <prop-row label="Lower Bound"><slide-input id="ULowerBound" min="0.0" max="5" value="0" step="0.1"></slide-input></prop-row>
+            <prop-row label="Hide Height"><slide-input id="UHideHeight" min="-0.1" max="2" value="0.6" step="0.1"></slide-input></prop-row>
+            <prop-row label="Offset X"><slide-input id="UOffsetX" min="-20" max="20" value="0" step="0.01"></slide-input></prop-row>
+            <prop-row label="Offset Y"><slide-input id="UOffsetY" min="-20" max="20" value="0" step="0.01"></slide-input></prop-row>
+        </prop-group>
+    </prop-panel>
+</prop-panel-btncont>
+
+</body></html>

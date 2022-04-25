@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!--[if lte IE 8]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+	<script>
+		function PopModal(){
+			var mThis = { 
+				//===============================================
+				//VARS & PROPERTIES
+				id:"pm"+Date.now()
+				,jDialog:null
+				,jHeader:null
+				,jBody:null
+				,jFooter:null
+				,isInitComplete:false
+				,onCloseHandler:null
+
+				//===============================================
+				,init:function(w,title){
+					if(!this.isInitComplete){
+						//Object References
+						this.jDialog = this.createModal();
+						this.jHeader = this.jDialog.find(".popModalHeader");
+						this.jBody = this.jDialog.find(".popModalBody");
+						this.jFooter = this.jDialog.find(".popModalFooter");
+
+						//Apply Events
+						this.jFooter.find(".popModalFBtnClose").click(this.hide);
+						this.jHeader.on("click",this.toggleMinimize);
+						this.jHeader.find("a").click(this.hide);
+						this.isInitComplete = true;
+					}//if
+					this.width(w);
+					this.title(title);
+				}//func
+
+				,createModal:function(){
+					var template = $("#popModalTemplate").wrap("<p/>").parent().html();
+					$("#popModalTemplate").unwrap();
+					$(document.body).append(template.replace("popModalTemplate",this.id));
+					return $("#"+this.id);
+				}//func
+
+				,toggleMinimize:function(e){
+					console.log("minimize " + mThis.id);
+					var isException = (e.target.getAttribute("data-min") != null);
+					if(e.target.tagName == "DIV" || isException){
+						mThis.jBody.toggle();
+						mThis.jFooter.toggle();
+					}//if
+				}//func
+
+				,destroy:function(){ this.jDialog.remove(); }
+
+
+				//===============================================
+				//METHODS
+				,show:function(){
+					this.jBody.show();
+					this.jDialog.fadeIn(200);
+				}//func
+
+				,hide:function(){
+					mThis.jDialog.fadeOut(200,function(){
+						mThis.jDialog.hide();
+						if(mThis.onCloseHandler != null) mThis.onCloseHandler(mThis);
+					});
+				}//func
+
+				,right:function(px){
+					if(px == undefined) return this.jDialog.css("right");
+					this.jDialog.css("right",px);
+					return px;
+				}//func
+
+				,title:function(txt){
+					if(txt == undefined) return this.jHeader.find("span").html();
+					this.jHeader.find("span").html(txt);
+					return txt;
+				}//func
+
+				,width:function(w){
+					if(w == undefined) return this.jDialog.width();
+					this.jDialog.width(w);
+					return w;
+				}//func
+
+				,setCloseHandler:function(evt){ this.onCloseHandler = evt; }
+			};
+			return mThis;
+		}//func
+
+		PopModalManager = {
+			//===============================================
+			//VARS & PROPERTIES
+			ModalArray:new Array()
+			,RightOffset:30
+
+			//===============================================
+			//METHODS
+			,create:function(objName,w,title){
+				
+			}//func
+
+			,attach:function(modal){
+				console.log("Attach " + modal.id);
+				modal.setCloseHandler(this.onClose);
+				modal.show();
+
+				this.ModalArray.push(modal);
+				this.resetPosition()
+			}//func
+
+			,resetPosition:function(){
+				var pos = this.RightOffset, org = 0;
+				for(var i=0; i < this.ModalArray.length; i++){
+					org = this.ModalArray[i].right();
+					if(org != pos) this.ModalArray[i].jDialog.animate({right:pos},"fast"); //if hasn't moved, then don't animate.
+
+					pos += this.ModalArray[i].width() + 10;
+				}//for
+			}//func
+
+			//===============================================
+			//EVENTS
+			,onClose:function(o){
+				var index = -1;
+
+				for(var i=0; i < PopModalManager.ModalArray.length; i++){
+					if(PopModalManager.ModalArray[i].id == o.id){ index = i; break; }
+				}//for
+
+				if(index != -1){
+					PopModalManager.ModalArray.splice(index,1);
+					o.destroy();
+					delete o;
+					PopModalManager.resetPosition();
+				}//if
+			}//func
+		};
+
+		function ChatPopModal(w,title){
+			var	mThis = PopModal();
+
+			//========================================
+			//Save super reference
+			super_init = mThis.init;
+
+			//========================================
+			//Override parent functions
+			mThis.init = function(w,title){
+				super_init.apply(mThis,[w,title]);
+				
+				var template = $("#chatContentTemplate").html();
+				mThis.jBody.html(template);
+
+				PopModalManager.attach(mThis);
+			}//if
+
+			//========================================
+			//Methods
+
+			mThis.init(w,title);
+			return mThis;
+		}//func
+
+		$(document).ready(function(){
+			//popManager.create(300,"Auto Pop");
+			var o = PopModal();
+			o.init(400,"woot");
+			o.show();
+			PopModalManager.attach(o);
+
+			ChatPopModal(300,"yo");
+		});
+	</script>
+
+	<style>
+		*{font-family:Verdana;}
+
+		.popModal{width:400px; position:fixed; bottom:0px; right:30px; box-shadow: 0px 0px 15px #777777; background:white; display:none;}
+		.popModal .popModalHeader{ background-color:#404040; color:white; padding:2px 4px; cursor:pointer; }
+		.popModal .popModalHeader ul{margin:0px; padding:0px; float:right; list-style-type:none;}
+		.popModal .popModalHeader li{display:inline-block;}
+		.popModal .popModalHeader a{color:white; font-weight:bold; text-decoration:none;}
+		.popModal .popModalBody{border:solid #b0b0b0; border-width:0px 1px 1px 1px;}
+		.popModal .popModalFooter{ background-color:#f0f0f0; color:white; padding:4px 6px; border:solid #b0b0b0; border-width:0px 1px 1px 1px;}
+
+		.popModal .dim{ filter: alpha(opacity=30); -moz-opacity:0.3; opacity:0.3; }
+		.popModal .popModalBody ul{margin:0px; height:200px; overflow-y:scroll; list-style-type:none;}
+		.popModal .popModalBody li{font-size:12px; padding:2px 5px; border-bottom:1px solid #e0e0e0;}
+		.popModal .popModalBody li div{font-size:10px; line-height:10px; color:#a0a0a0; padding:0px; margin:0px; clear:both;}
+		.popModal .popModalBody li div small{float:right; margin:3px 0px 0px 0px; display:inline-block; font-size:10px; line-height:10px;}
+		.popModal .popModalBody li div em.icon-lock{margin:0px 5px 0px 0px; cursor:pointer;}
+		.popModal .popModalBody li div b{margin:3px 0px 0px 0px; display:inline-block;}
+
+
+		.popModal ul{list-style-type:none;}
+		.popModal form{margin:0px; padding:0px; width:100%;}
+		.popModal form span{display:inline-block; width:100%; border:solid #d0d0d0; border-width:1px 0px 0px 0px; margin:0px;}
+		.popModal form .suggestions {background-color: #fefefe; width:100%;}
+		.popModal form .suggestions > div {float: left; padding: 2px; border-radius: 3px; border: 1px solid #CEE1E9; background-color: #E4EEF2; margin: 4px 2px 0; padding: 0 4px; font-size: 12px; cursor: pointer; }
+		.popModal form .suggestions > div:hover {background-color: #A6D5E4; border-color: #9BB3BD;}
+		.popModal form .suggestions > div > i {font-style: normal; font-weight: bold; margin-left: 4px; padding: 0 4px; color: #7AA1B3;}
+		.popModal form .suggestions > div:hover > i {color: #486674;}
+		.popModal textarea{margin:0px; padding:0px; width:100%; height:50px; border-width:0px;}
+	</style>
+</head>
+<body>
+	<div id="popModalTemplatez" class="popModal">
+		<div class="popModalHeader">
+			<span data-min="1">Someone</span>
+			<ul>
+				<li><a href="javascript:void(0);"><i class="icon-remove icon-white">X</i></a></li>
+			</ul>
+		</div>
+		<div class="popModalBody">
+			<ul>
+				<li><b>Person1:</b> <span>Testing One Two Three For Five</span><div>12/12/12 12:00</div></li>
+				<li><b>Person2:</b> <span>Testing One Two Three For Five</span><div>12/12/12 11:00</div></li>
+			</ul>
+			<form name="popModalForm"><span><textarea name="txtSend"></textarea></span></form>
+		</div>
+		<div class="chatModalFooter">
+			<button class="">Send</button>
+			<button class="">Close</button>
+		</div>
+	</div>
+
+	<div id="popModalTemplate" class="popModal">
+		<div class="popModalHeader"><span data-min="1"></span><ul><li><a href="javascript:void(0);">X</a></li></ul></div>
+		<div class="popModalBody"> Empty Modal </div>
+		<div class="popModalFooter"><button class="popModalFBtnClose">Close</button></div>
+	</div>
+
+	<div id="chatContentTemplate" style="display:none;">
+		<ul>
+			<li><b>Person1:</b> <span>Testing One Two Three For Five</span><div>12/12/12 12:00</div></li>
+			<li><b>Person2:</b> <span>Testing One Two Three For Five</span><div>12/12/12 11:00</div></li>
+		</ul>
+		<form>
+			<span>
+				<div class="suggestions">
+				</div>
+			</span>
+			<span><textarea name="txtSend"></textarea></span>
+		</form>
+	</div>
+
+</body>
+</html>

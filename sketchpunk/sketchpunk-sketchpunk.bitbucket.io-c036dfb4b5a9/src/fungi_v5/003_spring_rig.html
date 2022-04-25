@@ -1,0 +1,63 @@
+<!DOCTYPE html><script type="module">
+import App				from "./lib/fungi/App.js";
+import XhrQueue 		from "./lib/fungi/lib/XhrQueue.js";
+import GltfUtil	        from "./lib/fungi/lib/GltfUtil.js";
+import IKRig			from "./lib/fungi.armature/IKRig.js";
+import Motion			from "./lib/fungi.test/Motion.js";
+
+//#####################################################
+
+App.builder( true, true )
+	.use_armature()
+	.init_mod( "../fungi.armature/BoneSpring.js" )
+	.load_shaders( "../fungi.armature/LowPolySkin.js" )
+	.set_camera( 135, 25, 3, -0.2, 0.7, 0 )
+	.add( init )
+	.render_loop( on_draw )
+	//.render_on_mouse()
+	.build();
+
+//#####################################################
+
+let gModel, gMotion;
+function on_draw( dt, ss ){ gMotion( dt ); }
+
+async function init(){
+	let dl = await XhrQueue
+		.url( "../files/models/" )
+		.grp( "rex", "robo_trex.gltf", "json", "robo_trex.bin", "bin" )
+		.then();
+
+	if( dl.rex ) load_mesh( dl.rex.json, dl.rex.bin );
+
+	gMotion = Motion.sin( gModel, 1.0, [1,0.0,0] );
+
+	return true;
+}
+
+//#####################################################
+
+function load_mesh( json, bin ){	
+	let mat		= App.new_mat( "LowPolySkin", {color:"#ffffff"} );
+	let e		= GltfUtil.get_debug_view( "target_b", json, bin, mat );
+
+	// Setup IK Rig
+	let rig 	= e
+		.add_com( "IKRig" )
+		.init( null, false, 0 )
+		.add_point( "wing_l", "left_wing" )
+		.add_point( "wing_r", "right_wing" )
+		.add_chain( "tail", ["tail_1","tail_2","tail_3","tail_4","tail_5","tail_6","tail_7"] )
+	;
+
+	// Add some Spring Movement to specific bones
+	let bs = e.add_com( "BoneSpring" )
+		.add( rig.get_chain_indices( "tail" ), 0.9, 0.9, -0.1 )
+		.add( rig.points.wing_l.idx, 1.0, 0.2 )
+		.add( rig.points.wing_r.idx, 1.0, 0.2 );
+
+	gModel = e;
+}
+
+//#####################################################
+</script><page-layout></page-layout>

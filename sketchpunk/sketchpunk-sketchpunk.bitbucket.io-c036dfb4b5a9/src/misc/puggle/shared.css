@@ -1,0 +1,87 @@
+*{font-family: arial; }
+html,body{margin:0px;}
+body{ background-color:#303030; }
+
+/*---------------------------------------
+Responsive Design, So the node boxes can fold into one column on smaller screens.*/
+.rowFlex{ display:flex; flex-direction:column; }
+.rowFlex > section{ flex:1; padding:20px;}
+
+@media (min-width:768px) {
+    .rowFlex { flex-direction:row; }
+}
+
+.btnVertList{ padding:10px; }
+.btnVertList > * { display:block; margin-top:10px; width:100%;}
+.btnVertList > *:first-child { margin-top:0px; }
+
+
+.ctrList{ list-style:none; margin:10px 15px; padding:0px; }
+.ctrList > li{margin-top:10px;}
+.ctrList > li:first-child{margin-top:0px;}
+
+/*---------------------------------------
+Use the node container from NEditorJS, why not its a great design :) */
+.NodeContainer{background-color:rgba(63,63,63,.7); display:block; border-radius:5px; box-shadow: 0px 5px 10px #000000;}
+
+.NodeContainer > header{ display:block; background-color:#297286; color:white; border-radius:5px 5px 0px 0px;
+	text-align:center; padding:4px 12px;
+	-webkit-touch-callout: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;           
+}
+.NodeContainer > footer{ display:block; background-color:rgba(0,0,0,0.35); color:#c0c0c0; border-radius:0px 0px 5px 5px; border:1px solid #505050; border-width:1px 0px 0px 0px;
+	padding:4px 12px;         
+}
+
+
+/*---------------------------------------
+Quick styling for the control row that has the sliders, radios and checkboxes. */
+.ctrRow{ padding:0px 10px 20px 10px;}
+.ctrRow > span{color:white; opacity:0.5; }
+.ctrRow > label{color:white; opacity:0.9; }
+.ctrRow.full > * {display:block; width:100%;}
+
+
+input[type=text] { border:1px solid rgba(135, 213, 48, 0.7); background-color:rgba(0,0,0,0.4); color:green; text-align:center; padding:2px 4px; outline: none; font-size:1.1em;}
+input[type=text]:focus { border:1px solid rgba(135, 213, 48, 1); background-color:rgba(30,30,30,0.4);  color:lime;  }
+
+
+input[type=number] { border:1px solid rgba(135, 213, 48, 0.7); background-color:rgba(0,0,0,0.4); color:green; text-align:center; padding:2px 4px; outline: none; font-size:1.1em;}
+input[type=number]:focus { border:1px solid rgba(135, 213, 48, 1); background-color:rgba(30,30,30,0.4);  color:lime;  }
+
+/*---------------------------------------
+Make the radio buttons and checkboxes match the rest of this fine lookin style.*/
+input[type=radio],input[type=checkbox] { display:none; }
+input[type=radio] + label:before,
+input[type=checkbox] + label:before { content: ""; display: inline-block;  vertical-align:baseline;
+	width: 14px; height: 14px; margin-right: 8px; border-radius: 8px; background-color: #505050;  cursor: pointer;}
+input[type=radio]:checked + label:before,
+	input[type=checkbox]:checked + label:before{ content: ""; background-color: #86d530; }
+
+input[type=radio] + label,			input[type=checkbox] + label{cursor:pointer; vertical-align:baseline; color:white; }
+input[type=radio] + label:hover,	input[type=checkbox] + label:hover{color:#c0c0c0;}
+
+
+/*---------------------------------------
+http://danielstern.ca/range.css/#/ fixed up the results some, easer to change the code to get things just right*/
+input[type=range].slider{ -webkit-appearance: none; width: 100%; margin: 0px 0; }
+input[type=range].slider:focus{ outline: none; }
+
+input[type=range].slider::-webkit-slider-runnable-track { width: 100%; height:2px; cursor: pointer; background: #505050; transition: all 1s;}
+input[type=range].slider::-webkit-slider-thumb { height: 9px; width: 24px; margin-top: -3.75px; cursor: pointer; -webkit-appearance: none;
+	border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.7); background: rgba(135, 213, 48, 0.7);}
+input[type=range].slider:focus::-webkit-slider-runnable-track { background: #909090; }
+
+input[type=range].slider::-moz-range-track { width: 100%; height:2px; cursor: pointer; background: #505050; transition: all 1s;}
+input[type=range].slider::-moz-range-thumb { height: 9px; width: 24px; margin-top: -3.75px; cursor: pointer; -webkit-appearance: none;
+	border-radius: 12px; border: 1px solid rgba(0, 0, 0, 0.7); background: rgba(135, 213, 48, 0.7);}
+input[type=range].slider:focus::-moz-range-track { background: #909090; }
+
+input[type=range].slider::-ms-track { width: 100%; height: 24px; cursor: pointer; background: transparent; border-color: transparent; color: transparent; }
+input[type=range].slider::-ms-fill-lower { background: #3c4040; border: 0px solid #000101; border-radius: 45.8px; box-shadow: 1.3px 1.3px 1px #000000, 0px 0px 1.3px #0d0d0d; }
+input[type=range].slider::-ms-fill-upper { background: #484d4d; border: 0px solid #000101; border-radius: 45.8px; box-shadow: 1.3px 1.3px 1px #000000, 0px 0px 1.3px #0d0d0d; }
+input[type=range].slider::-ms-thumb { box-shadow: 0px 0px 1px #670000, 0px 0px 0px #810000; border: 0px solid #ff1e00; width: 24px; border-radius: 12px; background: rgba(255, 67, 95, 0.93); cursor: pointer; height: 24px; }
+input[type=range].slider:focus::-ms-fill-lower { background: #484d4d; }
+input[type=range].slider:focus::-ms-fill-upper { background: #545a5a; }
+
+input[type=button] { background-color:#6cab27; border:0px; color:white; border-radius:5px; padding:5px 12px; font-size:18px; cursor:pointer;}
+input[type=button]:hover{ background-color:#505050; }

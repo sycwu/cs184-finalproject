@@ -1,0 +1,191 @@
+<!DOCTYPE html><script type="module">
+import App, { Vec3, Quat, Mat4, Transform, Colour } from "./fungi/App.js";
+import XhrQueue from "./fungi/lib/XhrQueue.js";
+import Quad     from "./fungi/geo/Quad.js";
+
+//#####################################################
+App
+	.init( true )
+	.set_camera( 0, 20, 3, 0, 0.5, 0 )
+	.task( init )
+	.then();
+
+//#####################################################
+
+async function init(){
+    let img     = await XhrQueue.add( "../files/textures/uv_test_01.jpg" ).then();
+    let tex0    = App.texture.new( "uv_test_01", img );
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    init_shader();
+    let mat = App.shader.new_material( "TESTER", { base_tex : tex0 } ); //    
+    let e   = Quad( "sb", mat );
+    e.node.set_pos( 0.0, 0.5, 0 );
+	
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	return true;
+}
+
+//#####################################################
+
+let gUbo;
+function init_shader(){
+	App.shader.new( "TESTER", VERT_SRC, FRAG_SRC, [
+        { name:"base_tex",	type:"sampler2D", value:"null" },
+	], App.ubo.get_array( "Global", "Model" ) )
+    .set_blend( true )
+    //.set_alpha_coverage( true )
+	.set_cullface( false );
+}
+
+const VERT_SRC = `#version 300 es
+layout(location=0) in vec3 a_pos;
+layout(location=1) in vec3 a_norm;
+layout(location=2) in vec2 a_uv;
+
+uniform Global{ 
+	mediump mat4 proj_view; 
+	mediump mat4 camera_matrix;
+	mediump vec3 camera_pos;
+	mediump float delta_time;
+	mediump vec2 screen_size;
+	mediump float clock;
+} global;
+
+uniform Model{ 
+	mediump mat4 view_matrix;
+} model;
+
+out vec3 frag_wpos;
+out vec2 frag_uv;
+
+void main(void){
+    vec4 w_pos	= vec4( a_pos, 1.0 );
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Spherical billboarding
+    vec3 right 	= vec3( global.camera_matrix[0][0], global.camera_matrix[1][0], global.camera_matrix[2][0] ),
+         up		= vec3( global.camera_matrix[0][1], global.camera_matrix[1][1], global.camera_matrix[2][1] ); 
+    //   up     = vec3( 0.0, 1.0, 0.0 ); // Cylindrical
+
+    w_pos.xyz   = ( right * w_pos.x ) + ( up * w_pos.y ); // Rotate vertex toward camera
+    w_pos       = model.view_matrix * w_pos;
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    frag_uv         = a_uv;
+	frag_wpos		= w_pos.xyz;
+	//frag_norm 	= mat3( transpose( inverse( model.view_matrix ) ) ) * a_norm; // Need to Rotate and Scale Normal, do on CPU
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	gl_Position = global.proj_view * w_pos;
+
+}`;
+
+const FRAG_SRC = `#version 300 es
+precision mediump float;
+
+out vec4 out_color;
+
+uniform Global{ 
+	mediump mat4 proj_view; 
+	mediump mat4 camera_matrix;
+	mediump vec3 camera_pos;
+	mediump float delta_time;
+	mediump vec2 screen_size;
+	mediump float clock;
+} global;
+
+uniform Model{ 
+	mediump mat4 view_matrix; // Need World Space Translation
+} model;
+
+uniform sampler2D base_tex;
+
+//-------------------------
+
+in vec3 frag_wpos;
+in vec2 frag_uv;
+
+const vec3 LITE_POS = vec3( 2.0, 5.0, 5.0 );
+const float	PI      = 3.1415926535897932384626433832795;
+
+//-------------------------
+
+float sphere_intersect( vec3 ro, vec3 rd, vec3 pos, float radius ){
+    vec3 oc = ro - pos;         // Vec Length from Sphere Center to Ray Start Position
+    float b = dot( oc, rd );                    
+    float c = dot( oc, oc ) - radius*radius; // Distance to closest intersection    
+    float h = b*b - c;
+
+    if( h < 0.0 ) return -1.0;  // No Intersections
+    h = sqrt( h );
+    return -b - h;      // Distance from ray to Sphere Intersection Point
+}
+
+// Equirectangular, converts Normal Direction to UV Coords, great for spheres
+vec2 norm_uv( vec3 norm ){
+    float lon   = atan( norm.z, norm.x );
+    float lat   = acos( norm.y );
+    vec2 uv     = vec2( lon, lat ) * ( 1.0 / PI );
+    uv.x        = 1.0 - ( uv.x * 0.5 + 0.5 ); // Remap and reverse Lon
+    return uv;
+}
+
+//-------------------------
+
+void main( void ){
+    const float RADIUS  = 0.5; // Radius of the Sphere inside the quad, the quad's w/h is 1u.
+    const float MIN_LIT = 0.2; // Min Diffuse Light Strength
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Use Quat's UV to define a Circle
+    vec2 coord    = frag_uv * 2.0 - 1.0;  // Remap from 0,1 to -1 to 1
+	float radius  = dot( coord, coord );  // Len( Vector2 )
+	float dxdy    = fwidth( radius );     // Change Length Difference to next pixel
+	float a       = smoothstep( 0.99 + dxdy, 0.99 - dxdy, radius ); // Anti-Alias the circle edge
+
+    // If Alpha is zero, then we're in the bits 
+    // of the quad that isn't part of the circle, so hide it
+    if( a <= 0.0 ){
+        //discard;
+        out_color       = vec4( 1.0, 0.0, 0.0, 0.0 );
+        gl_FragDepth    = 1.0;
+        return;
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
+    // Sphere Intersection
+    vec3 ray_pos    = global.camera_pos;                // WS Camera Position, start of Ray
+    vec3 ray_dir    = normalize( frag_wpos - ray_pos ); // Ray direction, from start to Pixel WS Pos.
+    vec3 center_pos = model.view_matrix[ 3 ].xyz;       // Quad's Center will be Sphere's Center.
+    float ray_dist  = sphere_intersect( ray_pos, ray_dir, center_pos, RADIUS );
+
+    vec3 spos = ray_dir * ray_dist + ray_pos;           // Using Ray Origin to figure out WS Position of Sphere Intersection
+    vec3 norm = normalize( spos - center_pos );         // Normal is any sphere point from its center.
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+    // Diffuse Lighting
+    vec3 to_lit     = normalize( LITE_POS - spos );                 // Direction of Light from Sphere Position
+    float diffuse   = clamp( dot( to_lit, norm ), MIN_LIT, 1.0 );   // How much direct light does pixel get.
+
+    //out_color       = vec4( vec3( diffuse ), 1.0 ); return;
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+    // UV Mapping - Use Normal to create 
+    // polar coords that can be normalized to UV Coords
+    vec2 uv = norm_uv( norm );
+    vec4 px = texture( base_tex, uv );
+
+    out_color.rgb = px.rgb * diffuse;
+    out_color.a   = a;
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Sphere Depth - Take Sphere WS Position then transform it clip spacce
+    vec4 clip_pos   = global.proj_view * vec4( spos, 1.0 );
+    gl_FragDepth    = clip_pos.z / clip_pos.w;
+}`;
+
+//#####################################################
+</script>
+<html><head><style>html,body{ margin:0px; padding:0px; width:100%; height:100%; }</style>
+</head><body><canvas id="pg_canvas"></canvas></body></html>

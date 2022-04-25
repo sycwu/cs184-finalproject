@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!----><link type="text/css" rel="stylesheet" href="lib/goldenlayout-base.css" />
+		<link type="text/css" rel="stylesheet" href="lib/goldenlayout-dark-theme.css" />
+	
+		<style>
+			body, html{ padding:0px; margin:0px; width:100%; height:100%; background-color:silver;}
+			.view3d canvas{ position:absolute; left:0px; top:0px; }
+
+			.canvasStack{ width:100%; height:100%; }
+			.canvasStack canvas{ position:absolute; left:0px; top:0px; }
+		</style>
+	</head>
+<body>
+	<!---->
+	<script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+	<script type="text/javascript" src="lib/goldenlayout.min.js"></script>
+	
+	
+	<script type="module">
+		import CurveEditor 	from "./CurveEditor.js";
+
+		window.addEventListener("load", function(){
+			//gEditor = new CurveEditor( document.getElementById("view3d-canvas") );
+
+			/**/
+			var config = { content: [
+			    	{ type: "row", content: [
+			    			{ type: "stack", width:80, content:[
+			    				{ type: "component", componentName: "CurveEditor" },
+			    				{ type: "component", componentName: "Output" },
+			    				{ type: "component", componentName: "About" },
+			    			]},
+
+			    			{ type: "stack", content:[
+			    				{ type: "component", componentName: "Curve_Options" },
+			    				{ type: "component", componentName: "Graph_Options" },
+			    			]}
+			        ]}
+			    ]};
+
+			var myLayout = new GoldenLayout( config );
+
+			myLayout.registerComponent( 'testComponent', function( container, componentState ){
+			    container.getElement().html( '<h1>' + componentState.label + '</h1>' );
+			});
+
+			myLayout.registerComponent( 'CurveEditor', function( container, componentState ){ 
+				window.gEditor = new CurveEditor( container );
+			});
+
+			myLayout.registerComponent( 'About', function( container, componentState ){
+			    container.getElement()[0].appendChild( new AboutApp() );
+			});
+
+			myLayout.registerComponent( 'Output', function( container, componentState ){
+			    container.getElement()[0].appendChild( new AboutApp() );
+			});
+
+			myLayout.registerComponent( 'Curve_Options', function( container, componentState ){
+			    container.getElement()[0].appendChild( document.getElementById("CURVE_OPTIONS") );
+			});
+
+			myLayout.registerComponent( 'Graph_Options', function( container, componentState ){
+			    container.getElement()[0].appendChild( document.getElementById("GRAPH_OPTIONS") );
+			});
+
+			myLayout.on( 'stackCreated', function( stack ){
+				stack.header.controlsContainer.find( '.lm_close' ).remove(); //.off( 'click' ).click(function(){});
+				stack.header.controlsContainer.find( '.lm_popout' ).remove();
+			}); 
+			myLayout.on( 'tabCreated', function( tab ){ tab.closeElement.remove(); }); //.off( 'click' );
+				
+
+			myLayout.init();
+			
+		});
+
+
+		class PageHash{
+			static get(){
+				var hash = window.location.hash.substr(1);
+
+				//var result = hash.split('&').reduce(function (result, item) {
+				//   var parts = item.split('=');
+				//    result[parts[0]] = parts[1];
+				//    return result;
+				//}, {});
+			}
+
+			static set(){
+				window.location.hash = "new value";
+			}
+
+			/*
+			window.addEventListener("hashchange", function () {});
+			 */
+		}
+
+		//https://coryrylan.com/blog/introduction-to-web-components
+		class AboutApp  extends HTMLElement{
+			constructor(){ super(); }
+			connectedCallback() { this.innerHTML = `
+				<div class="about">
+			    	<h1>Curve Editor</h1>
+			    </div>
+			`;}
+		} customElements.define('about-app', AboutApp  );
+
+
+		class Opt{
+			/////////////////////////////////////////////////////////////
+			// OPERATIONS
+			/////////////////////////////////////////////////////////////
+			static compile( n ){
+				console.log( JSON.stringify( gEditor.output(n) ) );
+			}
+
+			/////////////////////////////////////////////////////////////
+			// CURVE OPTONS
+			/////////////////////////////////////////////////////////////
+			static changeCurve( elm ){
+				console.log( elm, elm.value );
+			}			
+			static changeSampleCnt( elm ){ gEditor.sampleCount = parseInt( elm.value ); gEditor.drawPoints(); }
+			static toggleBool( elm, name ){ gEditor[ name ] = ( elm.checked ); gEditor.drawPoints(); }
+
+
+			/////////////////////////////////////////////////////////////
+			// GRAPH OPTONS
+			/////////////////////////////////////////////////////////////
+			static changeGraphPadding( elm ){ gEditor.borderSpacing = parseFloat( elm.value ); gEditor.resetRect().drawGrid().drawPoints(); }
+
+		} window.Opt = Opt;
+
+	</script>
+
+	<div id="view3d-canvas" class="view3d"></div>
+
+	<style>
+		.frm {}
+		.frm form{}
+	</style>
+
+	<!--https://tympanus.net/Development/TextInputEffects/index.html-->
+	<div id="CURVE_OPTIONS" class="frm">
+		<form name="frmOpt" style="color:white;">
+			<select name="curveTypes" onChange="Opt.changeCurve(this)">
+				<option value="CubicBezier" selected="selected">Cublic Bezier</option>
+				<option value="CatmollRom">Catmull Rom</option>
+				<option value="KochanekBartels">Kochanek Bartels</option>
+			</select><br><br>
+
+
+			Sample Count:<br>
+			<select name="sampleCount" onChange="Opt.changeSampleCnt(this)">
+				<option value="10" selected="selected">10</option>
+				<option value="20">20</option>
+				<option value="30">30</option>
+				<option value="50">50</option>
+				<option value="100">100</option>
+			</select>
+
+			<!--
+			<input type="button" value="Compile Points" onClick="Opt.compile( 0 );">
+			<input type="button" value="Compile Point Cache" onClick="Opt.compile( 1 );">
+			<input type="button" value="Compile Arc Point Cache"  onClick="Opt.compile( 2 );"><br>
+			-->
+			<br><br>
+			<input type="checkbox" onClick="Opt.toggleBool(this, 'showSamples')"> View Samples<br><br>
+			<input type="checkbox" onClick="Opt.toggleBool(this, 'showArcSamples')"> View Arc Samples
+		</form>
+	</div>
+
+	<div id="GRAPH_OPTIONS" class="frm">
+		<form name="frmGraph">
+			<select name="graphPadding" onChange="Opt.changeGraphPadding(this)">
+				<option value="0.1">.1</option>
+				<option value="0.2" selected="selected">.2</option>
+				<option value="0.3">.3</option>
+				<option value="0.4">.4</option>
+			</select>
+		</form>
+	</div>
+</body>
+</html>
