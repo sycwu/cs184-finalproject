@@ -60,15 +60,33 @@
                     <!-- <img class="float-left" width="320px" src="img/blog-4.jpg" alt=""> -->
                     <h3 align="left">What We've Accomplished</h3>
                     <p align="left">
-                      
+			    Through our final project, our team set out to expand the functionality of pre-existing models of IK rigs by introducing 
+			    non-bipedal movement. Initially, we hoped to utilize [GLTF Pokemon models](https://github.com/06wj/pokemon), but we 
+			    ultimately chose not to as the source code was not formatted in a manner that was easily conducive to future enhancements. 
+			    Instead, we identified that we could employ [KhronosGroup's COLLADA (.dae) to .gltf and .bin Converter](https://www.google.com/url?sa=t&source=web&rct=j&url=https://github.com/KhronosGroup/COLLADA2GLTF&ved=2ahUKEwj56t3Pu7L3AhXCJkQIHcRoCE8QFnoECAsQAQ&usg=AOvVaw1Zv88mkdj-6vdWEErbqjd0), 
+			    for which we could make use of these [Pokemon models](https://www.models-resource.com/3ds/pokemonxy/). Our next task was to 
+			    demonstrate that the IK rigs could be re-targeted; this was done by duplicating a provided demo.html file, as we ensured that 
+			    it adequately provided us with a baseline to define the root and limbs / appendages of the character models. However, in able to 
+			    implement a broad range of non-bipedal movement, we found that we would need to add in bones that are defined by joint chains. 
+			    To accomplish this, we downloaded the Blender software and learnt how to specifically make and edit bones; we also "skinned" the 
+			    bones with vertex groups to form them into a more cohesive unit for re-targeting. 
+			    <br>
+			    By this point, we were able to form the core skeleton for our character models! However, we noticed that there was an issue with 
+			    our GLTF file, as it didn't have a pose attribute. This meant that it would be difficult to increase the accuracy of our re-targeting 
+			    code, especially if the target reference pose was vastly different from the source. We found that commenting out line 164 of the 
+			    demo.html file allowed us to preserve the IK solution for the skeleton, but this inherently resulted in bugging out the mesh 
+			    overlay, as it's now flying everywhere. 
                     </p>
                     <h3 align="left">Preliminary Results</h3>
                     <p align="left">
-                      
+			    <br>
+			    Presentation Slides
+			    <br>
+			    Video
                     </p>
                     <h3 align="left">Progress on our Work Plan</h3>
                     <p align="left">
-                      
+			    Hi
                     </p>
                     
                     <hr>
