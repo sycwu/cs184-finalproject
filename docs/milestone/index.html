@@ -74,19 +74,35 @@
 			    By this point, we were able to form the core skeleton for our character models! However, we noticed that there was an issue with 
 			    our GLTF file, as it didn't have a pose attribute. This meant that it would be difficult to increase the accuracy of our re-targeting 
 			    code, especially if the target reference pose was vastly different from the source. We found that commenting out line 164 of the 
-			    demo.html file allowed us to preserve the IK solution for the skeleton, but this inherently resulted in bugging out the mesh 
-			    overlay, as it's now flying everywhere. 
+			    demo.html file allowed us to preserve the IK solution for the skeleton, but this inherently resulted in bugging out the mesh, 
+			    as it's now flying in all directions and is not merely an overlay on top of the model's skeleton. 
                     </p>
                     <h3 align="left">Preliminary Results</h3>
                     <p align="left">
+			    Overall, we're really proud of our work on the final project so far! We were able to utilize our newfound knowledge of the Blender software 
+			    to build out the skeleton of our character models. In order to be able to re-target these models and ultimately implement non-bipedal 
+			    functionality, we created bones, compiled them together in joint-like structures, and "skinned" them into vertex groups to further ensure 
+			    that they would move as a cohesive unit. We were also able to fix our initial issue with the pose attribute after a lot of troubleshooting, 
+			    after we identified that it was due to an error with Blender exporting. We were able to solve this error by modifying the pose attributes for 
+			    the trex and vegeta models as well. While we were able to make some initial progress with skinning the models, we're hoping to be able to look 
+			    into a more efficient and correct way of representing this feature next , so that the mesh (as represented in our demo video) will no longer 
+			    bug out and fly in all directions. 
 			    <br>
-			    Presentation Slides
+			    We've linked a few [presentation slides](https://docs.google.com/presentation/d/15Lx5MikK2njUaLvOqi7eeQRLPR0JzwuGIcG2260tYBo/edit?usp=sharing), 
+			    which summarize our final project overall in addition to the current progress we've made.
 			    <br>
-			    Video
+			    We've also included a [milestone demo video](), which highlights what we've achieved so far. 
                     </p>
                     <h3 align="left">Progress on our Work Plan</h3>
                     <p align="left">
-			    Hi
+			    Reflecting upon our initial work plan, we found that we've been able to follow it relatively well. Initially,
+			    <br>
+			    This is the updated work plan we've created for ourselves, based on the progress we've made so far and what we still have left to finish. <br>
+			    4/26 - 5/1: Attach to models, generate rules and render animations. <br>
+			    5/1 - 5/5: <br>
+                      	    5/5: Final Presentation <br>
+                            5/5 - 5/10: Spend the last few days polishing the project as needed and writing up the webpage. <br>
+                            5/10: Final Submission
                     </p>
                     
                     <hr>
