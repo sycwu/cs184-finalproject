@@ -67,7 +67,7 @@
 			    sa=t&source=web&rct=j&url=https://github.com/KhronosGroup/COLLADA2GLTF&ved=2ahUKEwj56t3Pu7L3AhXCJkQIHcRoCE8QFnoECAsQAQ&usg=AOvVaw1Z
 			    v88mkdj-6vdWEErbqjd0), for which we could make use of these [Pokemon models](https://www.models-resource.com/3ds/pokemonxy/). Our 
 			    next task was to demonstrate that the IK rigs could be re-targeted; this was done by duplicating a provided demo.html file, as we 
-			    ensured that it adequately provided us with a baseline to define the root and limbs / appendages of the character models. However, 
+			    ensured that it adequately provided us with a baseline to define the root and limbs / appendages of the Pokemon character models. However, 
 			    in order to implement a broad range of non-bipedal movement, we found that we would need to add in bones that are defined by joint chains. 
 			    To accomplish this, we downloaded the Blender software and learnt how to specifically make and edit bones; we also "skinned" the 
 			    bones with vertex groups to form them into a more cohesive unit for re-targeting. 
@@ -84,10 +84,10 @@
 			    to build out the skeleton of our character models. In order to be able to re-target these models and ultimately implement non-bipedal 
 			    functionality, we created bones, compiled them together in joint-like structures, and "skinned" them into vertex groups to further ensure 
 			    that they would move as a cohesive unit. We were also able to fix our initial issue with the pose attribute after a lot of troubleshooting, 
-			    after we identified that it was due to an error with Blender exporting. We were able to solve this error by modifying the pose attributes for 
-			    the trex and vegeta models as well. While we were able to make some initial progress with skinning the models, we're hoping to be able to look 
-			    into a more efficient and correct way of representing this feature next , so that the mesh (as represented in our demo video) will no longer 
-			    bug out and fly in all directions. 
+			    after we identified that it was due to an error with Blender exporting. We were able to solve this error by manually creating a pose attribute 
+			    by using the rotation and translation attributes of the nodes of the trex and vegeta models as well. While we were able to make some initial 
+			    progress with skinning the models, we're hoping to be able to look into a more efficient and correct way of representing this feature next, 
+			    so that the mesh (as represented in our demo video) will no longer bug out and fly in all directions. 
 			    <br>
 			    We've linked a few [presentation slides](https://docs.google.com/presentation/d/15Lx5MikK2njUaLvOqi7eeQRLPR0JzwuGIcG2260tYBo/edit?usp=sharing), 
 			    which summarize our final project overall in addition to the current progress we've made.
