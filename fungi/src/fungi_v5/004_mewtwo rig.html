@@ -148,8 +148,8 @@ function load_mesh_b( json, bin ){
     // life to extra parts of our rig even if there is no animation data available for it.
 	e.add_com( "BoneSpring" )
 		.add( rig.get_chain_indices( "tail" ), 2.9, 0.9, -0.1 )
-		//.add( rig.points.wing_l.idx, 3.0, 0.9 )
-        //.add( rig.points.wing_r.idx, 3.0, 0.9 )
+		.add( rig.points.foot_l.idx, 3.0, 0.9 )
+        .add( rig.points.foot_r.idx, 3.0, 0.9 )
         //.add( rig.points.wing_l.idx, 5.0, 0.9 )
         //.add( rig.points.wing_r.idx, 5.0, 0.9 )
         ;
