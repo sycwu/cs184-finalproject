@@ -104,9 +104,11 @@ class FishRig extends IKRig{
         //p.spine.startEffectorDir[0] = p.spine.startEffectorDir[0] * 15;
         //p.spine.endEffectorDir[0] = p.spine.endEffectorDir[0] * 15;
         //[p.spine.startEffectorDir[1], p.spine.startEffectorDir[2]] = [p.spine.startEffectorDir[2], p.spine.startEffectorDir[1]];
-        [p.hip.poleDir[2], p.hip.poleDir[1]] = [p.hip.poleDir[1], p.hip.poleDir[2]];
-        [p.hip.effectorDir[2], p.hip.effectorDir[1]] = [p.hip.effectorDir[1], p.hip.effectorDir[2]];
-        this.spine?.solver.setTargetDir( p.hip.effectorDir, p.hip.poleDir );
+        [p.head.poleDir[1], p.head.poleDir[2]] = [p.head.poleDir[1], p.head.poleDir[2]];
+        [p.head.effectorDir[2], p.head.effectorDir[1]] = [p.head.effectorDir[1], p.head.effectorDir[2]];
+        p.head.effectorDir[1] =  p.head.effectorDir[1] * 0.3;
+        p.head.poleDir[1] = p.head.poleDir[1] * -1;
+        this.spine?.solver.setTargetDir( p.head.effectorDir, p.head.poleDir );
             //.setStartDir( p.spine.startEffectorDir, p.spine.startPoleDir )
             //.setEndDir( p.spine.endEffectorDir, p.spine.endPoleDir );
             //.setStartDir( dampened_spine_start, dampened_spine_poles )
