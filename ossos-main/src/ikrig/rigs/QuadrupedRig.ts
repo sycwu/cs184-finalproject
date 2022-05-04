@@ -94,13 +94,21 @@ class QuadrupedRig extends IKRig{
         //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
 
         // FIRST IDEA: Try to blend the arm direction with the hindLegs
-        // OTHER IDEAS: Maybe Try to lerp between the two hindlegs to create a delay for forelegs??
         let a = vec3.lerp( [0,0,0], p.armL.effectorDir, p.legR.effectorDir, 0.4 );
         let b = vec3.lerp( [0,0,0], p.armR.effectorDir, p.legL.effectorDir, 0.4 );
         vec3.normalize( a, a );
         vec3.normalize( b, b );
+        
+        // OTHER IDEAS: Maybe Try to lerp between the two hindlegs to create a delay for forelegs??
+        let c = vec3.lerp( [0,0,0], a, b, 0.2 );
+        let d = vec3.lerp( [0,0,0], a, b, 0.8 );
+        vec3.normalize( c, c );
+        vec3.normalize( d, d );
+
         this.foreLegL?.solver.setTargetDir( a, p.legR.poleDir, p.legR2.lenScale );
         this.foreLegR?.solver.setTargetDir( b, p.legL.poleDir, p.legL2.lenScale );
+        //this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir );
+        //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir );
 
         this.tarsalL?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir );
         this.tarsalR?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir );
@@ -114,10 +122,14 @@ class QuadrupedRig extends IKRig{
         this.hip?.solver
             .setTargetDir( p.hip.effectorDir, p.hip.poleDir )
             .setMovePos( p.hip.pos, p.hip.isAbsolute, p.hip.bindHeight );
-
+        
+        let hip2spine = p.spine.startEffectorDir - p.hip.startEffectorDir;
+        let rawr = [0,0,0];
         this.spine?.solver
-            .setStartDir( p.spine.startEffectorDir, p.spine.startPoleDir )
-            .setEndDir( p.spine.endEffectorDir, p.spine.endPoleDir );
+            //.setStartDir( p.spine.startEffectorDir, p.spine.startPoleDir )
+            //.setEndDir( p.spine.endEffectorDir, p.spine.endPoleDir );
+            .setStartDir( p.hip.effectorDir + rawr, p.hip.poleDir )
+            .setEndDir( p.hip.effectorDir + rawr, p.hip.poleDir );
     }
 }
 

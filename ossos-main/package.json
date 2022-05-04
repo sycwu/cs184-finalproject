@@ -22,7 +22,7 @@
     },
 
     "scripts"       : {
-        "dev"           : "vite",
+        "dev"           : "vite -d",
         "build"         : "vite build",
         "build:types"   : "tsc --declaration --noEmit false --emitDeclarationOnly --strict false --outDir ./dist",
         "build:site"    : "vite build --mode site",

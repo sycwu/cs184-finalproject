@@ -1,0 +1,620 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.7.33",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0,
+                42
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "name" : "ClawDuplicator",
+            "translation" : [
+                0,
+                0,
+                -0.18143677711486816
+            ]
+        },
+        {
+            "name" : "arm.39",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                1
+            ],
+            "name" : "arm.38",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                2
+            ],
+            "name" : "arm.37",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                3
+            ],
+            "name" : "arm.36",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                4
+            ],
+            "name" : "arm.35",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                5
+            ],
+            "name" : "arm.34",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                6
+            ],
+            "name" : "arm.33",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                7
+            ],
+            "name" : "arm.32",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                8
+            ],
+            "name" : "arm.31",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                9
+            ],
+            "name" : "arm.30",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                10
+            ],
+            "name" : "arm.29",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                11
+            ],
+            "name" : "arm.28",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                12
+            ],
+            "name" : "arm.27",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                13
+            ],
+            "name" : "arm.26",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                14
+            ],
+            "name" : "arm.25",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                15
+            ],
+            "name" : "arm.24",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                16
+            ],
+            "name" : "arm.23",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                17
+            ],
+            "name" : "arm.22",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                18
+            ],
+            "name" : "arm.21",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                19
+            ],
+            "name" : "arm.20",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                20
+            ],
+            "name" : "arm.19",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                21
+            ],
+            "name" : "arm.18",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                22
+            ],
+            "name" : "arm.17",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                23
+            ],
+            "name" : "arm.16",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                24
+            ],
+            "name" : "arm.15",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                25
+            ],
+            "name" : "arm.14",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                26
+            ],
+            "name" : "arm.13",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                27
+            ],
+            "name" : "arm.12",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                28
+            ],
+            "name" : "arm.11",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                29
+            ],
+            "name" : "arm.10",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                30
+            ],
+            "name" : "arm.09",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                31
+            ],
+            "name" : "arm.08",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                32
+            ],
+            "name" : "arm.07",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                33
+            ],
+            "name" : "arm.06",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                34
+            ],
+            "name" : "arm.05",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                35
+            ],
+            "name" : "arm.04",
+            "translation" : [
+                0,
+                1,
+                0
+            ]
+        },
+        {
+            "children" : [
+                36
+            ],
+            "name" : "arm.03",
+            "translation" : [
+                0,
+                1.0000001192092896,
+                0
+            ]
+        },
+        {
+            "children" : [
+                37
+            ],
+            "name" : "arm.02",
+            "translation" : [
+                0,
+                0.9999999403953552,
+                0
+            ]
+        },
+        {
+            "children" : [
+                38
+            ],
+            "name" : "arm.01",
+            "translation" : [
+                0,
+                0.9999999403953552,
+                0
+            ]
+        },
+        {
+            "children" : [
+                39
+            ],
+            "name" : "arm.00"
+        },
+        {
+            "mesh" : 0,
+            "name" : "Robot.Arm.038",
+            "skin" : 0
+        },
+        {
+            "children" : [
+                41,
+                40
+            ],
+            "name" : "Armature"
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Circle.039",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "JOINTS_0" : 2,
+                        "WEIGHTS_0" : 3
+                    },
+                    "indices" : 4
+                }
+            ]
+        }
+    ],
+    "skins" : [
+        {
+            "inverseBindMatrices" : 5,
+            "joints" : [
+                40,
+                39,
+                38,
+                37,
+                36,
+                35,
+                34,
+                33,
+                32,
+                31,
+                30,
+                29,
+                28,
+                27,
+                26,
+                25,
+                24,
+                23,
+                22,
+                21,
+                20,
+                19,
+                18,
+                17,
+                16,
+                15,
+                14,
+                13,
+                12,
+                11,
+                10,
+                9,
+                8,
+                7,
+                6,
+                5,
+                4,
+                3,
+                2,
+                1
+            ],
+            "name" : "Armature"
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 36285,
+            "max" : [
+                0.7905633449554443,
+                40,
+                0.6000000238418579
+            ],
+            "min" : [
+                -0.7905633449554443,
+                0,
+                -0.8005081415176392
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 36285,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5121,
+            "count" : 36285,
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5126,
+            "count" : 36285,
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5123,
+            "count" : 57600,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5126,
+            "count" : 40,
+            "type" : "MAT4"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 435420,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 435420,
+            "byteOffset" : 435420
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 145140,
+            "byteOffset" : 870840
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 580560,
+            "byteOffset" : 1015980
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 115200,
+            "byteOffset" : 1596540
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 2560,
+            "byteOffset" : 1711740
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 1714300,
+            "uri" : "robo_tentacle.bin"
+        }
+    ]
+}

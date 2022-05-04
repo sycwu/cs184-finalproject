@@ -1,0 +1,21 @@
+{
+    "chains":[
+        { "name":"braidr", "bones":["rbraid01","rbraid02","rbraid03","rbraid04","rbraid05","rbraid06","rbraid07","rbraid08","rbraid09","rbraid10","rbraid11"] },
+        { "name":"braidl", "bones":["lbraid01","lbraid02","lbraid03","lbraid04","lbraid05","lbraid06","lbraid07","lbraid08","lbraid09","lbraid10","lbraid11"] },
+        { "name":"hair1",  "bones":["hairfrbase01","hairfrbase02","hairfrbase03"] },
+        { "name":"hair2",  "bones":["hairfra01","hairfra02"] },
+        { "name":"hair3",  "bones":["hairtopbase01","hairtopbase02","hairtopbase03"] },
+        { "name":"hair4",  "bones":["hairtopa01","hairtopa02"] },
+        { "name":"hair5",  "bones":["hairtopb01","dynhairtopb02"] }
+    ],
+
+    "bones":[
+        "dyn_boot_flap_a_01_l",
+        "dyn_boot_flap_c_01_l",
+        "dyn_boot_flap_a_01_r",
+        "dyn_boot_flap_c_01_r",
+        "dyn_boot_flap_d_01_r",
+        "eye.R",
+        "eye.L"
+    ]
+}
