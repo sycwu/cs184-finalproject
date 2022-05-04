@@ -1,0 +1,33 @@
+=========================================================================
+VERSION : 0.0.0.3
+
+New
+- Armature object can be cloned
+- New IK Solvers:
+  - ArcSolver
+  - ArcSinSolver
+  - PistonSolver
+  - SpringSolver
+  - SwingTwistChainSolver
+  - TrapezoidSolver
+  - ZSolver
+  - FabrikSolver
+  - NaturalCCDSolver
+  - CatenarySolver
+- BabylonJS Examples
+- ReadyPlayerMe : Loading & TPose Generation
+- Quadruped IK Rig ( Prototype )
+- Bone Slots : Attachment locations to bones
+- IK Animation Additives
+
+Changes
+- Bone.pidx is no longer nullable. -1 is used to denote there is no parent
+- Pose.getWorldTransform & getWorldRotation handles bIdx == -1 by returning Pose.offset value.
+- SwingTwistSolver doesn't apply twist if pole direction is all zeros
+- BoneSprings setRestPose has a parameter to not reset the current springs velocity and position.
+
+Fixes
+- Update the codebase to handle the Bone.pidx change.
+- Bug in BoneSprings where reset is called, it was zeroing out the input data which caused issues.
+
+=========================================================================
