@@ -99,9 +99,10 @@ class QuadrupedRig extends IKRig{
         vec3.normalize( a, a );
         vec3.normalize( b, b );
         
-        // OTHER IDEAS: Maybe Try to lerp between the two hindlegs to create a delay for forelegs??
-        let c = vec3.lerp( [0,0,0], a, b, 0.2 );
-        let d = vec3.lerp( [0,0,0], a, b, 0.8 );
+        // OTHER IDEAS: (not working correctly right now)
+        // Maybe Try to lerp between the two hindlegs to create a delay for forelegs??
+        let c = vec3.lerp( [0,0,0], p.legL.effectorDir, p.legR.effectorDir, 0.4 );
+        let d = vec3.lerp( [0,0,0], p.legR.effectorDir, p.legL.effectorDir, 0.4 );
         vec3.normalize( c, c );
         vec3.normalize( d, d );
 
