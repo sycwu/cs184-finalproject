@@ -123,13 +123,29 @@ class QuadrupedRig extends IKRig{
             .setTargetDir( p.hip.effectorDir, p.hip.poleDir )
             .setMovePos( p.hip.pos, p.hip.isAbsolute, p.hip.bindHeight );
         
-        let hip2spine = p.spine.startEffectorDir - p.hip.startEffectorDir;
-        let rawr = [0,0,0];
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // Spine dampening for quadrapeds: The spine for quadrupeds initially "wobbled" 
+        // quite a lot. This is not significant in bipeds because the shoulder / arms 
+        // do in fact wobble passively. But for a quadruped the head swaying looks goofy.
+        // A possible solution is to make the spine stationary, like the hip currently is.
+        
+        let dampened_spine_start = vec3.lerp( [0,0,0], [0,0,0], p.spine.startEffectorDir, 0.1 );
+        vec3.normalize( dampened_spine_start, dampened_spine_start );
+
+        let dampened_spine_end = vec3.lerp( [0,0,0], [0,0,0], p.spine.endEffectorDir, 0.1 );
+        vec3.normalize( dampened_spine_end, dampened_spine_end );
+
+        let dampened_spine_poles = vec3.lerp( [0,0,0], [0,0,0], p.spine.startPoleDir, 0 );
+        vec3.normalize( dampened_spine_poles, dampened_spine_poles );
+
+        let dampened_spine_polee = vec3.lerp( [0,0,0], [0,0,0], p.spine.endPoleDir, 0 );
+        vec3.normalize( dampened_spine_polee, dampened_spine_polee );
+
         this.spine?.solver
             //.setStartDir( p.spine.startEffectorDir, p.spine.startPoleDir )
             //.setEndDir( p.spine.endEffectorDir, p.spine.endPoleDir );
-            .setStartDir( p.hip.effectorDir + rawr, p.hip.poleDir )
-            .setEndDir( p.hip.effectorDir + rawr, p.hip.poleDir );
+            .setStartDir( dampened_spine_start, dampened_spine_poles )
+            .setEndDir( dampened_spine_end, dampened_spine_polee );
     }
 }
 
