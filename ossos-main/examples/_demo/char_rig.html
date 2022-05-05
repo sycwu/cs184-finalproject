@@ -45,7 +45,7 @@ window.addEventListener( "load", async _=>{
         });
 
     new LigerZeroRig()
-        .loadAsync( { meshPos:[-1,0,0] } )
+        .loadAsync( { meshPos:[0,0,2] } )
         .then( rig=>{
             rig.toScene( App );
             Proto.rigs.set( 'Liger', rig );
@@ -54,15 +54,15 @@ window.addEventListener( "load", async _=>{
     new LigerDolphinRig()
         .loadAsync( { meshPos:[-2,0,0] } )
         .then( rig=>{
-            rig.toScene( App );
-            Proto.rigs.set( 'Liphin', rig );
+            //rig.toScene( App );
+            //Proto.rigs.set( 'Liphin', rig );
         });
 
     new IKRig()
         .loadAsync( { meshPos:[2,0,0] } )
         .then( rig=>{
-            rig.toScene( App );
-            Proto.rigs.set( 'IKRig', rig );
+            //rig.toScene( App );
+            //Proto.rigs.set( 'IKRig', rig );
         });
 
     new TinaRig()
