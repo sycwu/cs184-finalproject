@@ -87,8 +87,8 @@ class QuadrupedRig extends IKRig{
         // But without running the animation of the legs twice with the second on a slight delay
         // there is no other solution.
 
-        this.hindLegL?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
-        this.hindLegR?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
+        //this.hindLegL?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
+        //this.hindLegR?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
 
         //this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
         //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
@@ -106,16 +106,28 @@ class QuadrupedRig extends IKRig{
         vec3.normalize( c, c );
         vec3.normalize( d, d );
 
-        this.foreLegL?.solver.setTargetDir( a, p.legR.poleDir, p.legR2.lenScale );
-        this.foreLegR?.solver.setTargetDir( b, p.legL.poleDir, p.legL2.lenScale );
+        // Blend legs with hip?
+        let e = vec3.lerp( [0,0,0], p.legL.effectorDir, p.hip.effectorDir, 0.2 );
+        let f = vec3.lerp( [0,0,0], p.legR.effectorDir, p.hip.effectorDir, 0.2 );
+        vec3.normalize( e, e );
+        vec3.normalize( f, f );
+
+        //this.hindLegL?.solver.setTargetDir( e, p.legL.poleDir, p.legL2.lenScale );
+        //this.hindLegR?.solver.setTargetDir( f, p.legR.poleDir, p.legR2.lenScale );
+        this.hindLegL?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
+        this.hindLegR?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
+
+        this.foreLegL?.solver.setTargetDir( e, p.legR.poleDir, p.legR2.lenScale);
+        this.foreLegR?.solver.setTargetDir( f, p.legL.poleDir, p.legL2.lenScale);
         //this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir );
         //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir );
 
-        this.tarsalL?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir );
-        this.tarsalR?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir );
+        this.tarsalL?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir, p.footL.lenScale );
+        this.tarsalR?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir, p.footR.lenScale );
 
-        this.carpalL?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir );
-        this.carpalR?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir );
+        //Carpals need to adjusted to fix the foot wobbles?
+        this.carpalL?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir, p.footL.lenScale );
+        this.carpalR?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir, p.footR.lenScale );
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         this.head?.solver.setTargetDir( p.head.effectorDir, p.head.poleDir );
