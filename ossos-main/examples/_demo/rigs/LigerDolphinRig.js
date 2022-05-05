@@ -1,6 +1,6 @@
 import CharacterRig, { Gltf2 }  from '../lib/CharacterRig.js';
 
-import FishRig                  from '../../../src/ikrig/rigs/FishRig';
+import DolphinRig                  from '../../../src/ikrig/rigs/DolphinRig';
 import HipSolver                from '../../../src/ikrig/solvers/HipSolver';
 import ZSolver                  from '../../../src/ikrig/solvers/ZSolver';
 import SwingTwistSolver         from '../../../src/ikrig/solvers/SwingTwistSolver';
@@ -8,7 +8,7 @@ import SwingTwistEndsSolver     from '../../../src/ikrig/solvers/SwingTwistEndsS
 import LimbSolver               from '../../../src/ikrig/solvers/LimbSolver';
 import EffectorScale            from '../../../src/ikrig/animation/additives/EffectorScale';
 
-class LigerZeroRig extends CharacterRig{
+class LigerDolphinRig extends CharacterRig{
     constructor(){ super(); }
 
     async loadAsync( config=null ){
@@ -68,8 +68,8 @@ class LigerZeroRig extends CharacterRig{
 
     _setupRig(){
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // FishRig is a prototype, so no auto rigging
-        const r     = this.rig = new FishRig();
+        // DolphinRig is a prototype, so no auto rigging
+        const r     = this.rig = new DolphinRig();
         const arm   = this.arm;
         const pose  = this.pose;
 
@@ -90,8 +90,8 @@ class LigerZeroRig extends CharacterRig{
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // Set Solvers
         r.hip.setSolver( new SwingTwistSolver().initData( pose, r.hip ) );
-        r.spine.setSolver( new SwingTwistSolver().initData( pose, r.spine ) );
-        r.head.setSolver( new SwingTwistSolver().initData( pose, r.footR ) );
+        r.spine.setSolver( new SwingTwistEndsSolver().initData( pose, r.spine ) );
+        r.head.setSolver( new SwingTwistSolver().initData( pose, r.head ) );
 
         r.hindLegL.setSolver( new ZSolver().initData( pose, r.hindLegL ) );
         r.hindLegR.setSolver( new ZSolver().initData( pose, r.hindLegR ) );
@@ -107,10 +107,10 @@ class LigerZeroRig extends CharacterRig{
     
     // CharacterRig.applyIKPose
     applyIKPose( ikPose, dt ){
-        // Fish don't have their own IKPose object
+        // Dolphins don't have their own IKPose object
         // Use a method on the rig that will translate the 
         // Biped IK Pose into something that would kinda work
-        // for the Fish
+        // for the Dolphin
 
         if( this.ikPose && this.additives ){
             this.ikPose.copy( ikPose );
@@ -132,4 +132,4 @@ class LigerZeroRig extends CharacterRig{
     // #endregion
 }
 
-export default LigerZeroRig;
+export default LigerDolphinRig;

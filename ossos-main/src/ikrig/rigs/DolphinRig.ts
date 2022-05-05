@@ -16,7 +16,7 @@ import IKRig                            from './IKRig';
 
 // https://www.schoolofmotion.com/blog/how-to-rig-quadrupeds-animation
 
-class FishRig extends IKRig{
+class DolphinRig extends IKRig{
     //#region MAIN
     hip         ?: IKChain = undefined;
     tail        ?: IKChain = undefined;
@@ -95,6 +95,7 @@ class FishRig extends IKRig{
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         p.hip.effectorDir[0] = p.hip.effectorDir[0] * 3;
+        [p.hip.effectorDir[0], p.hip.effectorDir[1]] = [p.hip.effectorDir[1], p.hip.effectorDir[0]];
         this.hip?.solver.setTargetDir( p.hip.effectorDir, p.hip.poleDir );
 
         //p.head.effectorDir[0] = p.head.effectorDir[0] * 3;
@@ -103,17 +104,20 @@ class FishRig extends IKRig{
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //p.spine.startEffectorDir[0] = p.spine.startEffectorDir[0] * 15;
         //p.spine.endEffectorDir[0] = p.spine.endEffectorDir[0] * 15;
-        //[p.spine.startEffectorDir[1], p.spine.startEffectorDir[2]] = [p.spine.startEffectorDir[2], p.spine.startEffectorDir[1]];
-        [p.head.poleDir[1], p.head.poleDir[2]] = [p.head.poleDir[1], p.head.poleDir[2]];
-        [p.head.effectorDir[2], p.head.effectorDir[1]] = [p.head.effectorDir[1], p.head.effectorDir[2]];
-        p.head.effectorDir[1] =  p.head.effectorDir[1] * 0.3;
-        p.head.poleDir[1] = p.head.poleDir[1] * -1;
-        this.spine?.solver.setTargetDir( p.head.effectorDir, p.head.poleDir );
-            //.setStartDir( p.spine.startEffectorDir, p.spine.startPoleDir )
-            //.setEndDir( p.spine.endEffectorDir, p.spine.endPoleDir );
+        [p.spine.startPoleDir[0], p.spine.startPoleDir[1]] = [p.spine.startPoleDir[1], p.spine.startPoleDir[0]];
+        [p.spine.endPoleDir[0], p.spine.endPoleDir[1]] = [p.spine.endPoleDir[1], p.spine.endPoleDir[0]];
+        //[p.spine.startEffectorDir[0], p.spine.startEffectorDir[1]] = [p.spine.startEffectorDir[1], p.spine.startEffectorDir[0]];
+        //[p.spine.endEffectorDir[0], p.spine.endEffectorDir[1]] = [p.spine.endEffectorDir[1], p.spine.endEffectorDir[0]];
+        //[p.hip.poleDir[1], p.hip.poleDir[2]] = [p.hip.poleDir[1], p.hip.poleDir[2]];
+        //[p.hip.effectorDir[2], p.hip.effectorDir[1]] = [p.hip.effectorDir[1], p.hip.effectorDir[2]];
+        //p.hip.poleDir[0] =  p.hip.poleDir[0] * 3 ;
+        //p.hip.effectorDir[0] =  p.hip.effectorDir[0] * 1 ;
+        this.spine?.solver
+            .setStartDir( p.spine.startEffectorDir, p.spine.startPoleDir )
+            .setEndDir( p.spine.endEffectorDir, p.spine.endPoleDir );
             //.setStartDir( dampened_spine_start, dampened_spine_poles )
             //.setEndDir( dampened_spine_end, dampened_spine_polee );
     }
 }
 
-export default FishRig;
+export default DolphinRig;
