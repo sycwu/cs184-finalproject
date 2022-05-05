@@ -87,29 +87,37 @@ class QuadrupedRig extends IKRig{
         // But without running the animation of the legs twice with the second on a slight delay
         // there is no other solution.
 
-        this.hindLegL?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
-        this.hindLegR?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
+        // this.hindLegL?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
+        // this.hindLegR?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
 
         //this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
         //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
 
         // FIRST IDEA: Try to blend the arm direction with the hindLegs
-        let a = vec3.lerp( [0,0,0], p.armL.effectorDir, p.legR.effectorDir, 0.4 );
-        let b = vec3.lerp( [0,0,0], p.armR.effectorDir, p.legL.effectorDir, 0.4 );
+        let a = vec3.lerp( [0,0,0], p.armL.effectorDir, p.legR.effectorDir, .4 );
+        let b = vec3.lerp( [0,0,0], p.armR.effectorDir, p.legL.effectorDir, .4 );
         vec3.normalize( a, a );
         vec3.normalize( b, b );
+
+        let a2 = vec3.lerp( [0,0,0], p.armL.effectorDir, p.legR.effectorDir, 1 );
+        let b2 = vec3.lerp( [0,0,0], p.armR.effectorDir, p.legL.effectorDir, 1 );
+        vec3.normalize( a2, a2 );
+        vec3.normalize( b2, b2 );
         
         // OTHER IDEAS: (not working correctly right now)
         // Maybe Try to lerp between the two hindlegs to create a delay for forelegs??
-        let c = vec3.lerp( [0,0,0], p.legL.effectorDir, p.legR.effectorDir, 0.4 );
-        let d = vec3.lerp( [0,0,0], p.legR.effectorDir, p.legL.effectorDir, 0.4 );
+        let c = vec3.lerp( [0,0,0], p.legR.effectorDir, p.legL.effectorDir, 0.6 );
+        let d = vec3.lerp( [0,0,0], p.legR.effectorDir, p.legL.effectorDir, 0.6 );
         vec3.normalize( c, c );
         vec3.normalize( d, d );
 
-        this.foreLegL?.solver.setTargetDir( a, p.legR.poleDir, p.legR2.lenScale );
-        this.foreLegR?.solver.setTargetDir( b, p.legL.poleDir, p.legL2.lenScale );
-        //this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir );
-        //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir );
+        this.hindLegL?.solver.setTargetDir( a2, p.legL.poleDir, p.legL.lenScale );
+        this.hindLegR?.solver.setTargetDir( b2, p.legR.poleDir, p.legR.lenScale );
+
+        this.foreLegR?.solver.setTargetDir( a, p.legR.poleDir, p.legR2.lenScale );
+        this.foreLegL?.solver.setTargetDir( b, p.legL.poleDir, p.legL2.lenScale );
+        // this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir );
+        // this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir );
 
         this.tarsalL?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir );
         this.tarsalR?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir );
