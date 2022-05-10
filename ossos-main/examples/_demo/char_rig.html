@@ -15,6 +15,7 @@ import TRexRig              from './rigs/TRex.js';
 import IKRig                from './rigs/IKRig.js';
 import LigerZeroRig         from './rigs/LigerZeroRig.js';
 import LigerDolphinRig      from './rigs/LigerDolphinRig.js';
+import LigerFishRig      from './rigs/LigerFishRig.js';
 import TinaRig              from './rigs/TinaRig.js';
 import ToruRig              from './rigs/ToruRig.js';
 import RoninRig             from './rigs/Ronin.js';
@@ -45,17 +46,24 @@ window.addEventListener( "load", async _=>{
         });
 
     new LigerZeroRig()
-        .loadAsync( { meshPos:[0,0,2] } )
+        .loadAsync( { meshPos:[2,0,0] } )
         .then( rig=>{
             rig.toScene( App );
             Proto.rigs.set( 'Liger', rig );
         });
+
+    new LigerFishRig()
+    .loadAsync( { meshPos:[-4,0,0] } )
+    .then( rig=>{
+        rig.toScene( App );
+        Proto.rigs.set( 'Fishger', rig );
+    });
     
     new LigerDolphinRig()
         .loadAsync( { meshPos:[-2,0,0] } )
         .then( rig=>{
-            //rig.toScene( App );
-            //Proto.rigs.set( 'Liphin', rig );
+            rig.toScene( App );
+            Proto.rigs.set( 'Liphin', rig );
         });
 
     new IKRig()

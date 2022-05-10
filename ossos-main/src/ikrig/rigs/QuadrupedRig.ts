@@ -87,8 +87,8 @@ class QuadrupedRig extends IKRig{
         // But without running the animation of the legs twice with the second on a slight delay
         // there is no other solution.
 
-        // this.hindLegL?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
-        // this.hindLegR?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
+        this.hindLegL?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
+        this.hindLegR?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
 
         //this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir, p.legR.lenScale );
         //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir, p.legL.lenScale );
@@ -107,7 +107,7 @@ class QuadrupedRig extends IKRig{
         // OTHER IDEAS: (not working correctly right now)
         // Maybe Try to lerp between the two hindlegs to create a delay for forelegs??
 
-        let lerpScale = 6;
+        let lerpScale = 10;
         let t1 = 0;
         if (p.legL.effectorDir[0] < p.legR.effectorDir[0]) {
             t1 = (p.legR.effectorDir[0] - p.legL.effectorDir[0]) * lerpScale ;
@@ -138,12 +138,12 @@ class QuadrupedRig extends IKRig{
         //this.foreLegL?.solver.setTargetDir( p.legR.effectorDir, p.legR.poleDir );
         //this.foreLegR?.solver.setTargetDir( p.legL.effectorDir, p.legL.poleDir );
 
-        this.tarsalL?.solver.setTargetDir( p.footL.effectorDir*0, p.footL.poleDir );
-        this.tarsalR?.solver.setTargetDir( p.footR.effectorDir*0, p.footR.poleDir );
+        this.tarsalL?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir );
+        this.tarsalR?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir );
 
         //Carpals need to adjusted to fix the foot wobbles?
-        this.carpalL?.solver.setTargetDir( p.footL.effectorDir *0, p.footL.poleDir );
-        this.carpalR?.solver.setTargetDir( p.footR.effectorDir *0, p.footR.poleDir );
+        this.carpalL?.solver.setTargetDir( p.footR.effectorDir, p.footR.poleDir );
+        this.carpalR?.solver.setTargetDir( p.footL.effectorDir, p.footL.poleDir );
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         this.head?.solver.setTargetDir( p.head.effectorDir, p.head.poleDir );
