@@ -74,6 +74,17 @@
                     </p>
                     <h3 align="left">Technical Approach</h3>
                     <p align="left"> 
+			    As our starting point, we utilized two open-source libraries from SketchPunk to serve as a baseline for the core aspects of bipedal 
+			    movement, upon which we could explore and implement the functionality that is needed for non-bipedal movement to occur. The first 
+			    library we referenced was Fungi, an open-source WebGL 2.0-based 3D character rendering and game engine. It was composed of multiple 
+			    IK rigs and solvers that contain several key groups of creature body parts. We also utilized Ossos, which is an open-source 
+			    web-based character animation and skinning library. It was composed of an armature system that that is built entirely around bones 
+			    (not joints), and also has a prototype quadrupedal rig.
+			    <br>
+			    Our project can be broken down into three main components: the MVP, the quadruped, and the dolphin. For the MVP, we utilized the Fungi 
+			    library to successfully rig a bi-pedal Pokemon called Mewtwo. For the quadruped, we optimized the process of quadruped rigging that is 
+			    present in the Ossos library. Finally, for the dolphin, we re-targed the entire animation sequence for a new creature body type.
+			    <br>
                     </p>
                     <h3 align="left">Results</h3>
                     <p align="left">
