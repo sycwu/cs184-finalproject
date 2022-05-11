@@ -116,7 +116,19 @@
 			    of the forelimbs in the character model such that it more closely resembled the appearance of non-bipedal motion. 
                     </p>
 		    <p align="left">
-			    To implement the dolphin,
+			    To implement the dolphin, we had to be creative! Initially, we found that any type of fish did not have its own IKPose object within our source code, which 
+			    signaled that we would need to use a method on the rig that would translate the current functionality of the biped IK pose such that it could also be used 
+			    for fish. To accomplish this, we first aimed to identify where motion could be “isolated” within any type of creature (or not simply exclusive of fish). We found 
+			    that motion is typically centered in the hips for both bipedal and quadrupedal creatures, so we simply extended this logic to the center of a dolphin. To emulate 
+			    this centralized motion within a creature like a dolphin, we simply removed the legs on the original quadrupedal model. More precisely, to reproduce the motion of 
+			    the head and hips of a dolphin, we solely utilized the hip motion of a quadrupedal model. We also aimed to amplify and swap the x- and y-coordinates of motion, so 
+			    that it would appear as if the dolphin was swimming up and down instead of side-to-side (which is more reminiscent of real-life motion). Moreover, for the spine of 
+			    the dolphin, we chose to exclusively utilize the spine motion of the quadrupedal model. In aiming to adapt bipedal motion into quadrupedal motion, we found that 
+			    there were a few complications in the movement of the spine as it was twisting excessively in response to these changes. Using the spine motion allowed us to reduce 
+			    the amount of twisting in the spine, such that it appeared to be more natural and conducive with the rest of the motion within the dolphin. Finally, using everything 
+			    that we learned about movement for each of the different models, we combined this logic with a 3D dance animation sequence that was sourced from Mixamo. Collectively, 
+			    this created a really cool effect where it looks like our models are dancing! To implement this functionality, we utilized the bind attributes of each model and 
+			    calculated inverse matrices to incorporate and execute the up-down motion of a dolphin compared with the left-right motion of the bi-pedal and quadrupedal creatures.
                     </p>
                     <h3 align="left">Results</h3>
                     <p align="left">
