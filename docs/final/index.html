@@ -85,12 +85,30 @@
 			    library to successfully rig a bi-pedal Pokemon called Mewtwo. For the quadruped, we optimized the process of quadruped rigging that was 
 			    present in the Ossos library. Finally, for the dolphin, we re-targeted the entire animation sequence for a new creature body type.
 			    <br>
+			    To implement the Mewtwo MVP, we utilized KhronosGroup's COLLADA (.dae) to .gltf and .bin Converter, for which we could make use of these Pokemon 
+			    models. We aimed to demonstrate that the IK rigs could be re-targeted; this was done by duplicating a provided demo.html file, as we ensured that 
+			    it adequately provided us with a baseline to define the root and limbs / appendages of the Pokemon character models. However, in order to implement 
+			    a broad range of non-bipedal movement, we found that we would need to add in bones that are defined by joint chains. To accomplish this, we downloaded 
+			    the Blender software and learnt how to specifically make and edit bones; we also "skinned" the bones with vertex groups to form them into a more 
+			    cohesive unit for re-targeting. Altogether, this allowed us to form the core skeleton for our character models! However, we noticed that there 
+			    was an issue with our GLTF file, as it didn't have a pose attribute. This meant that it would be difficult to increase the accuracy of our 
+			    re-targeting code, especially if the target reference pose was vastly different from the source. Ultimately, we identified that this issue was 
+			    due to an error with Blender exporting. We were able to solve this error by manually creating a pose attribute by using the rotation and 
+			    translation attributes of the nodes of the trex and vegeta models.
+			    <br>
+			    To implement the quadruped:
                     </p>
                     <h3 align="left">Results</h3>
                     <p align="left">
                     </p>
                     <h3 align="left">References</h3>
                     <p align="left">
+			    <ul>
+				    <li> <a href="https://github.com/sketchpunk/Fungi">Fungi</a> </li>
+				    <li> <a href="https://github.com/sketchpunklabs/ossos">Ossos</a> </li>
+				    <li> <a href="https://www.google.com/url?sa=t&source=web&rct=j&url=https://github.com/KhronosGroup/COLLADA2GLTF&ved=2ahUKEwj56t3Pu7L3AhXCJkQIHcRoCE8QFnoECAsQAQ&usg=AOvVaw1Zv88mkdj-6vdWEErbqjd0">KhronosGroup's COLLADA (.dae) to .gltf and .bin Converter</a> </li>
+				    <li> <a href="https://www.models-resource.com/3ds/pokemonxy/">Pokemon Models</a> </li>
+			    </ul>
                     </p>
                     <h3 align="left">Individual Contributions</h3>
                     <p align="left">
