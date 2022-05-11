@@ -96,7 +96,22 @@
 			    due to an error with Blender exporting. We were able to solve this error by manually creating a pose attribute by using the rotation and 
 			    translation attributes of the nodes of the trex and vegeta models.
 			    <br>
-			    To implement the quadruped:
+			    To implement the quadruped, we focused upon two sub-tasks. Foremost, we sought to implement a core functionality that we defined to be "spine dampening". 
+			    Initially, we found that the provided quadrupedal models in Ossos were rendered with a spine that wobbled a lot. While this was insignificant for bipedal 
+			    models (as the shoulders and arms inherently do move passively), this extreme movement of the spine in quadrupeds resulted in the head of the model swaying 
+			    too much, to the extent that it was not representative of real-life motion. To fix this, we sought to make the spine stationary, in the same manner that the 
+			    hips of the model were rendered. To accomplish this, we mimicked the process of hip rigging for the spine, which was done by performing successive linear 
+			    interpolations to calculate the start, end, and pole components of the spine. We also dampened and normalized the necessary target directions for each of 
+			    the different spine components. Collectively, this had the effect of dampening the spine in our quadruped models such that it more closely resembled the 
+			    appearance of non-bipedal motion. The next sub-task we aimed to complete for the quadruped was a key feature that we defined to be "forelimb delay". At first, 
+			    we found that there was a need to introduce a slight delay between the front and back legs of the quadrupedal model, in order to more closely match how 
+			    non-bipedal animals move at different speeds (ie. walk or run) in real life. We sought to implement this functionality by computing the distance between 
+			    the hind legs' target direction, and by dynamically performing linear interpolations upon the two hind legs in order to simulate a delay in the motion of 
+			    the forelegs. We coupled these calculations with linear interpolations upon the hip components of the model, as this could "blend" the legs with the hip to 
+			    collectively form one cohesive motion. We initially found that the hips were moving at a slightly different speed than the hind legs, so blending the two 
+			    components would serve the effect of providing a needed offset to the forelegs. Ultimately, these steps collectively had the effect of delaying the motion 
+			    of the forelimbs in the character model such that it more closely resembled the appearance of non-bipedal motion. 
+			    <br>
                     </p>
                     <h3 align="left">Results</h3>
                     <p align="left">
