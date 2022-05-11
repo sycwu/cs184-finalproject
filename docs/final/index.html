@@ -80,11 +80,13 @@
 			    IK rigs and solvers that contain several key groups of creature body parts. We also utilized Ossos, which is an open-source 
 			    web-based character animation and skinning library. It was composed of an armature system that that is built entirely around bones 
 			    (not joints), and also has a prototype quadrupedal rig.
-			    <br>
+                    </p>
+		    <p align="left">
 			    Our project can be broken down into three main tasks: the MVP, the quadruped, and the dolphin. For the MVP, we utilized the Fungi 
 			    library to successfully rig a bi-pedal Pokemon called Mewtwo. For the quadruped, we optimized the process of quadruped rigging that was 
 			    present in the Ossos library. Finally, for the dolphin, we re-targeted the entire animation sequence for a new creature body type.
-			    <br>
+                    </p>
+		    <p align="left">
 			    To implement the Mewtwo MVP, we utilized KhronosGroup's COLLADA (.dae) to .gltf and .bin Converter, for which we could make use of these Pokemon 
 			    models. We aimed to demonstrate that the IK rigs could be re-targeted; this was done by duplicating a provided demo.html file, as we ensured that 
 			    it adequately provided us with a baseline to define the root and limbs / appendages of the Pokemon character models. However, in order to implement 
@@ -95,7 +97,8 @@
 			    re-targeting code, especially if the target reference pose was vastly different from the source. Ultimately, we identified that this issue was 
 			    due to an error with Blender exporting. We were able to solve this error by manually creating a pose attribute by using the rotation and 
 			    translation attributes of the nodes of the trex and vegeta models.
-			    <br>
+                    </p>
+		    <p align="left">
 			    To implement the quadruped, we focused upon two sub-tasks. Foremost, we sought to implement a core functionality that we defined to be "spine dampening". 
 			    Initially, we found that the provided quadrupedal models in Ossos were rendered with a spine that wobbled a lot. While this was insignificant for bipedal 
 			    models (as the shoulders and arms inherently do move passively), this extreme movement of the spine in quadrupeds resulted in the head of the model swaying 
@@ -111,18 +114,52 @@
 			    collectively form one cohesive motion. We initially found that the hips were moving at a slightly different speed than the hind legs, so blending the two 
 			    components would serve the effect of providing a needed offset to the forelegs. Ultimately, these steps collectively had the effect of delaying the motion 
 			    of the forelimbs in the character model such that it more closely resembled the appearance of non-bipedal motion. 
-			    <br>
+                    </p>
+		    <p align="left">
+			    To implement the dolphin,
                     </p>
                     <h3 align="left">Results</h3>
                     <p align="left">
+			    Task 1: Mewtwo MVP
+			    <ul>
+				    <li> <a href="https://drive.google.com/file/d/1fRz_nfrhUJt5nsvwBEo5zdm1yD-Zmc_H/view?usp=sharing">Best Mesh Attempt</a> </li>
+				    <li> <a href="https://drive.google.com/file/d/1jaS9TdxV8CRS74-zZAQtgItFez7bU78_/view?usp=sharing">Skeleton Only</a> </li>
+			    </ul>
+                    </p>
+		    <p align="left">
+			    Task 2.1: Quadruped Spine Dampening
+			    <ul>
+				    <li> <a href="https://drive.google.com/file/d/15o3C6n6FJxZf2RL9f-NRqj1MfLU4eoks/view?usp=sharing">Before Dampening</a> </li>
+				    <li> <a href="https://drive.google.com/file/d/14T5im0rFXL_9lHV_wNvfkvl0v_823H0Q/view?usp=sharing">After Dampening</a> </li>
+			    </ul>
+                    </p>
+		    <p align="left">
+			    Task 2.2: Quadruped Forelimb Delay
+			    <ul>
+				    <li> <a href="https://drive.google.com/file/d/17xt6s7xwWPAGgBC6wQW0w5I82xbL3Qka/view?usp=sharing">Same Legs in Sync</a> </li>
+				    <li> <a href="https://drive.google.com/file/d/12iuOq1DAI_OUbt0YrZIXGiCP2_Gv6YtH/view?usp=sharing">Opposite Legs in Sync</a> </li>
+				    <li> <a href="https://drive.google.com/file/d/1VQ9fX4BNhspGa_SgwG8kZEdkCcrRk_HU/view?usp=sharing">In-Between Sync (Most Realistic)</a> </li>
+			    </ul>
+                    </p>
+	            <p align="left">
+			    Task 3: Dolphin Rig
+			    <ul>
+				    <li> <a href="https://drive.google.com/file/d/183E3xpC5jTSaI2SRplhYr8UzwhRFqA4v/view?usp=sharing">Walking Motion</a> </li>
+				    <li> <a href="https://drive.google.com/file/d/1W-6Q93hTLn8fN66j0gRZRvPgymug-Jd2/view?usp=sharing">Running Motion</a> </li>
+				    <li> <a href="https://drive.google.com/file/d/1whrDPJvkS4EGgTJkfAOINU8i8C04H2sb/view?usp=sharing">Extra: Dancing Motion</a> </li>
+			    </ul>
                     </p>
                     <h3 align="left">References</h3>
                     <p align="left">
+			    The following links display the references that we utilized as we built our final project:
 			    <ul>
+				    <li> <a href="https://www.youtube.com/watch?v=KLjTU0yKS00">GDC 2016 Talk on IK Rigs</a> </li>
+				    <li> <a href="https://www.youtube.com/watch?v=SQo9pTQ14Jk">Demo Video on Open-Source Code</a> </li>
 				    <li> <a href="https://github.com/sketchpunk/Fungi">Fungi</a> </li>
 				    <li> <a href="https://github.com/sketchpunklabs/ossos">Ossos</a> </li>
 				    <li> <a href="https://www.google.com/url?sa=t&source=web&rct=j&url=https://github.com/KhronosGroup/COLLADA2GLTF&ved=2ahUKEwj56t3Pu7L3AhXCJkQIHcRoCE8QFnoECAsQAQ&usg=AOvVaw1Zv88mkdj-6vdWEErbqjd0">KhronosGroup's COLLADA (.dae) to .gltf and .bin Converter</a> </li>
 				    <li> <a href="https://www.models-resource.com/3ds/pokemonxy/">Pokemon Models</a> </li>
+				    <li> <a href="https://vimeo.com/202205778">Quadruped Locomotion Tutorial</a> </li>
 			    </ul>
                     </p>
                     <h3 align="left">Individual Contributions</h3>
